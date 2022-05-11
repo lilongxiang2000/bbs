@@ -1,6 +1,6 @@
-const express      = require('express')
+const express = require('express')
 const cookieParser = require('cookie-parser')
-const fs           = require('fs')
+const fs = require('fs')
 
 
 const PORT = 8080
@@ -15,13 +15,6 @@ function timeISO() {
 }
 function timeLocale(time) {
   return new Date(time).toLocaleString()
-}
-function hashCode(s) {
-  let h
-  for(let i = 0; i < s.length; i++) {
-    h = Math.imul(31, h) + s.charCodeAt(i) | 0
-  }
-  return h
 }
 
 /*
@@ -44,10 +37,6 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser('bbs'))
 
-// app.use((req, res, next) => {
-//   console.log(req.cookies, req.signedCookies)
-//   next()
-// })
 
 // ./
 app.get('/', (req, res, next) => {
@@ -96,6 +85,73 @@ app.get('/', (req, res, next) => {
   next()
 })
 
+
+// user
+app.get('/user/:username', (req, res, next) => {
+  // Array.prototype.find() return 'it' not boolean
+  let user = users.find(it => it.username == req.params.username)
+  if (user) {
+    // header 显示内容
+    if (req.signedCookies.loginUser) {
+      let self = users.find(it => it.username == req.signedCookies.loginUser)
+      res
+        .type('html')
+        .write(`
+          <h1>hello,
+            <a href="/user/${req.signedCookies.loginUser}">
+              ${req.signedCookies.loginUser}
+            </a>
+          </h1>
+          <span>已加入 ${(Date.now() - self.joinDate) / 86400000 >> 0} 天</span>
+          <a href="/">home</a>
+          <a href="/logout">logout</a>
+          <a href="/setting">setting</a>
+        `)
+    } else {
+      res
+        .type('html')
+        .write(`
+          <a href="/">home</a>
+          <a href="/register">register</a>
+          <a href="/login">login</a>
+        `)
+    }
+
+    res.write('<hr>')
+    // 查看的用户信息
+    // 查看的用户不是自己时
+    if (req.signedCookies.loginUser != user.username) {
+      res.write(`
+        <h1>username:
+          <a href="/user/${user.username}">
+            ${user.username}
+          </a>
+        </h1>
+        <span>已加入 ${(Date.now() - user.joinDate) / 86400000 >> 0} 天</span>
+        <hr>
+      `)
+    }
+
+    // 加载发布过的帖子
+    res.write('<ul>')
+    let thisPosts = posts.filter(it => it.author == user.username)
+    for (let it of thisPosts) {
+      // date 转为 本地化时间，
+      // 存的时候为 new Date().toISOString()
+      res.write(`
+        <li>
+          <a href="/post/${it.id}">${it.title}</a>
+          <span>${timeLocale(it.date)}</span>
+        </li>
+      `)
+    }
+    res.end('</ul>')
+  } else res.end(`Not fount user ${req.params.username}`)
+
+  next()
+})
+
+
 // register
 app.get('/register', (req, res, next) => {
   res
@@ -117,22 +173,23 @@ app.get('/register', (req, res, next) => {
 })
 app.post('/register', (req, res, next) => {
   // 防止传来 脏数据
-  let regInfo =  {
+  let userInfo = {
     username: req.body.username,
     email: req.body.email,
     password: req.body.email,
-    isDelete: false
+    isDelete: false,
+    joinDate: Date.now()
   }
 
   if ( // username | email 已经存在
-    users.some(it => it.username == regInfo.username) ||
-    users.some(it => it.email == regInfo.email)
+    users.some(it => it.username == userInfo.username) ||
+    users.some(it => it.email == userInfo.email)
   ) {
     res
       .type('html')
       .end('username or email already exists, <a href="/register">back register</a>')
   } else {
-    users.push(regInfo)
+    users.push(userInfo)
     fs.writeFileSync('./users.json', JSON.stringify(users, null, 2))
     res
       .type('html')
@@ -141,6 +198,7 @@ app.post('/register', (req, res, next) => {
 
   next()
 })
+
 
 // login
 app.get('/login', (req, res, next) => {
@@ -167,10 +225,11 @@ app.post('/login', (req, res, next) => {
     password: loginInfo.password
   }
 
-  if (users.find(it =>
+  let user = users.find(it =>
     it.username == loginInfo.username &&
     it.password == loginInfo.password
-  )) {
+  )
+  if (user) {
     res.cookie('loginUser', loginInfo.username, {
       maxAge: 86400000, // 单位 毫秒 一天
       signed: true,
@@ -185,12 +244,14 @@ app.post('/login', (req, res, next) => {
   next()
 })
 
+
 // logout
 app.get('/logout', (req, res, next) => {
   res.clearCookie('loginUser')
   res.redirect('/') // 回到主页
   next()
 })
+
 
 // post
 app.get('/post/:id', (req, res, next) => {
@@ -222,7 +283,7 @@ app.get('/post/:id', (req, res, next) => {
       let thisComments = comments.filter(it => it.postID == req.params.id)
       for (let comment of thisComments) {
         res.write(`
-          <a href="/users/${comment.author}">${comment.author}</a>
+          <a href="/user/${comment.author}">${comment.author}</a>
           <span>${timeLocale(comment.date)}</span>
           <p>${comment.text}</p>
         `)
@@ -279,6 +340,7 @@ app.post('/post', (req, res, next) => {
   next()
 })
 
+
 // comment
 app.post('/comment/:postID', (req, res, next) => {
   if (req.signedCookies.loginUser) {
@@ -300,6 +362,8 @@ app.post('/comment/:postID', (req, res, next) => {
 
   next()
 })
+
+
 
 app.listen(PORT, '127.0.0.1', () => {
   console.log('Listening on', PORT)
