@@ -1,7 +1,7 @@
-const express        = require('express')
-const cookieParser   = require('cookie-parser')
-const fs             = require('fs')
-const { v4: uuidv4 } = require('uuid')
+const express      = require('express')
+const cookieParser = require('cookie-parser')
+const fs           = require('fs')
+const { nanoid }   = require('nanoid')
 
 
 const PORT = 8080
@@ -16,6 +16,13 @@ function timeISO() {
 }
 function timeLocale(time) {
   return new Date(time).toLocaleString()
+}
+function hashCode(s) {
+  let h
+  for(let i = 0; i < s.length; i++) {
+    h = Math.imul(31, h) + s.charCodeAt(i) | 0
+  }
+  return h
 }
 
 /*
@@ -257,7 +264,7 @@ app.post('/post', (req, res, next) => {
   if (req.signedCookies.loginUser) {
     // 防止传来 脏数据
     let postInfo = {
-      id: uuidv4(),
+      id: nanoid(),
       title: req.body.title,
       text: req.body.text,
       author: req.signedCookies.loginUser,
@@ -278,7 +285,7 @@ app.post('/comment/:postID', (req, res, next) => {
   if (req.signedCookies.loginUser) {
     // 防止传来 脏数据
     let commentInfo = {
-      id: uuidv4(),
+      id: nanoid(),
       postID: req.params.postID,
       text: req.body.text,
       date: timeISO(),
