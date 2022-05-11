@@ -66,8 +66,8 @@ app.get('/', (req, res, next) => {
     res
       .type('html')
       .write(`
-        <a href="/login">login</a>
         <a href="/register">register</a>
+        <a href="/login">login</a>
       `)
   }
 
