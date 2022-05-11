@@ -110,12 +110,12 @@ app.get('/register', (req, res, next) => {
   next()
 })
 app.post('/register', (req, res, next) => {
-  let regInfo = req.body
   // 防止传来 脏数据
-  regInfo = {
-    username: regInfo.username,
-    email: regInfo.email,
-    password: regInfo.email
+  let regInfo =  {
+    username: req.body.username,
+    email: req.body.email,
+    password: req.body.email,
+    isDelete: false
   }
 
   if ( // username | email 已经存在
