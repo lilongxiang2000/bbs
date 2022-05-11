@@ -1,7 +1,6 @@
 const express      = require('express')
 const cookieParser = require('cookie-parser')
 const fs           = require('fs')
-const { nanoid }   = require('nanoid')
 
 
 const PORT = 8080
@@ -264,7 +263,7 @@ app.post('/post', (req, res, next) => {
   if (req.signedCookies.loginUser) {
     // 防止传来 脏数据
     let postInfo = {
-      id: nanoid(),
+      id: `${Date.now()}`, // 待定
       title: req.body.title,
       text: req.body.text,
       author: req.signedCookies.loginUser,
@@ -285,7 +284,7 @@ app.post('/comment/:postID', (req, res, next) => {
   if (req.signedCookies.loginUser) {
     // 防止传来 脏数据
     let commentInfo = {
-      id: nanoid(),
+      id: `${Date.now()}`,
       postID: req.params.postID,
       text: req.body.text,
       date: timeISO(),
