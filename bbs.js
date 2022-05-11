@@ -48,22 +48,22 @@ app.get('/', (req, res, next) => {
           <a href="/user/${req.signedCookies.loginUser}">
           ${req.signedCookies.loginUser}</a>
         </h1>
-        <a href="/register">register</a>
-        <a href="/logout">logout</a>
+        <a href="/register">注册</a>
+        <a href="/logout">登出</a>
 
         <form action="/post" method="post">
-          <span>title</span><input type="text" name="title"><br>
-          <span>text</span><br>
+          <span>标题</span><input type="text" name="title"><br>
+          <span>正文</span><br>
           <textarea name="text" cols="30" rows="10"></textarea><br>
-          <input type="submit" value="post">
+          <input type="submit" value="发帖">
         </form>
       `)
   } else {
     res
       .type('html')
       .write(`
-        <a href="/register">register</a>
-        <a href="/login">login</a>
+        <a href="/register">注册</a>
+        <a href="/login">登录</a>
       `)
   }
 
@@ -111,9 +111,9 @@ app.get('/user/:username', (req, res, next) => {
       res
         .type('html')
         .write(`
-          <a href="/">home</a>
-          <a href="/register">register</a>
-          <a href="/login">login</a>
+          <a href="/">主页</a>
+          <a href="/register">注册</a>
+          <a href="/login">登录</a>
         `)
     }
 
@@ -157,15 +157,15 @@ app.get('/register', (req, res, next) => {
   res
     .type('html')
     .end(`
-      <h1>register</h1>
-      <a href="/">home</a>
-      <a href="/login">login</a>
+      <h1>注册</h1>
+      <a href="/">主页</a>
+      <a href="/login">登录</a>
       <form action="/register" method="post">
         <div>Name: <input name="username" type="text"></div>
         <div>Email: <input name="email" type="email"></div>
         <div>Password: <input name="password" type="password"></div>
         <div>Password-2: <input type="password"></div>
-        <button type="submit">register</button>
+        <button type="submit">注册</button>
       </form>
     `)
 
@@ -187,13 +187,13 @@ app.post('/register', (req, res, next) => {
   ) {
     res
       .type('html')
-      .end('username or email already exists, <a href="/register">back register</a>')
+      .end('用户名或邮箱重复，请<a href="/register">重新注册</a>')
   } else {
     users.push(userInfo)
     fs.writeFileSync('./users.json', JSON.stringify(users, null, 2))
     res
       .type('html')
-      .end('register success, <a href="/login">go to login</a>')
+      .end('注册成功，<a href="/login">去登录</a>')
   }
 
   next()
@@ -205,13 +205,13 @@ app.get('/login', (req, res, next) => {
   res
     .type('html')
     .end(`
-      <h1>login</h1>
-      <a href="/">home</a>
-      <a href="/register">register</a>
+      <h1>登录</h1>
+      <a href="/">主页</a>
+      <a href="/register">注册</a>
       <form action="/login" method="post">
         <div>Name: <input name="username" type="text"></div>
         <div>Password: <input name="password" type="password"></div>
-        <button type="submit">login</button>
+        <button type="submit">登录</button>
       </form>
     `)
 
@@ -238,7 +238,7 @@ app.post('/login', (req, res, next) => {
   } else {
     res
       .type('html')
-      .end('username or password incorrect, <a href="/register">go to register</a>')
+      .end('用户名或邮箱重复，请<a href="/register">重新注册</a>')
   }
 
   next()
@@ -266,9 +266,9 @@ app.get('/post/:id', (req, res, next) => {
             <a href="/user/${req.signedCookies.loginUser}">
             ${req.signedCookies.loginUser}</a>
           </h1>
-          <a href="/">home</a>
-          <a href="/register">register</a>
-          <a href="/logout">logout</a>
+          <a href="/">主页</a>
+          <a href="/register">注册</a>
+          <a href="/logout">登出</a>
           <hr>
           <div>
             <h2>${post.title}</h2>
@@ -300,9 +300,9 @@ app.get('/post/:id', (req, res, next) => {
       res
         .type('html')
         .end(`
-          <a href="/">home</a>
-          <a href="/register">register</a>
-          <a href="/login">login</a>
+          <a href="/">主页</a>
+          <a href="/register">注册</a>
+          <a href="/login">登录</a>
 
           <div>
             <h2>${post.title}</h2>
@@ -357,7 +357,7 @@ app.post('/comment/:postID', (req, res, next) => {
     fs.writeFileSync('./comments.json', JSON.stringify(comments, null, 2))
     res.redirect(`/post/${req.params.postID}`)
   } else {
-    res.end('please login to comment')
+    res.end('请登录后在发表评论')
   }
 
   next()
