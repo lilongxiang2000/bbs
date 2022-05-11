@@ -1,6 +1,7 @@
-const express = require('express')
-const cookieParser = require('cookie-parser')
-const fs = require('fs')
+const express        = require('express')
+const cookieParser   = require('cookie-parser')
+const fs             = require('fs')
+const { v4: uuidv4 } = require('uuid')
 
 
 const PORT = 8080
@@ -254,12 +255,11 @@ app.get('/post/:id', (req, res, next) => {
 app.post('/post', (req, res, next) => {
   // 已登录用户才可发帖
   if (req.signedCookies.loginUser) {
-    let postInfo = req.body
     // 防止传来 脏数据
-    postInfo = {
-      id: Date.now(),
-      title: postInfo.title,
-      text: postInfo.text,
+    let postInfo = {
+      id: uuidv4(),
+      title: req.body.title,
+      text: req.body.text,
       author: req.signedCookies.loginUser,
       date: timeISO(),
       isDelete: false
@@ -276,12 +276,14 @@ app.post('/post', (req, res, next) => {
 // comment
 app.post('/comment/:postID', (req, res, next) => {
   if (req.signedCookies.loginUser) {
-    let commentInfo = req.body
-    commentInfo = {
+    // 防止传来 脏数据
+    let commentInfo = {
+      id: uuidv4(),
       postID: req.params.postID,
-      text: commentInfo.text,
+      text: req.body.text,
       date: timeISO(),
       author: req.signedCookies.loginUser,
+      isDelete: false
     }
     comments.push(commentInfo)
     fs.writeFileSync('./comments.json', JSON.stringify(comments, null, 2))
