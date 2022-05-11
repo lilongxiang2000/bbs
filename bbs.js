@@ -7,6 +7,15 @@ const PORT = 8080
 const app = express()
 const users = JSON.parse(fs.readFileSync('./users.json'))
 const posts = JSON.parse(fs.readFileSync('./posts.json'))
+const comments = JSON.parse(fs.readFileSync('./comments.json'))
+
+
+function timeISO() {
+  return new Date().toISOString()
+}
+function timeLocale(time) {
+  return new Date(time).toLocaleString()
+}
 
 /*
   http://localhost:8080/
@@ -53,29 +62,29 @@ app.get('/', (req, res, next) => {
           <input type="submit" value="post">
         </form>
       `)
-
-    res.write('<hr><ul>')
-    for (let post of posts) {
-      // date 转为 本地化时间，
-      // 存的时候为 new Date().toISOString()
-      res.write(`
-        <li>
-          <a href="/post/${post.id}">${post.title}</a>
-          <span><a href="/user/${post.author}">@${post.author}</a></span>
-          <span>${new Date(post.date).toLocaleString()}</span>
-        </li>
-      `)
-    }
-    res.end('</ul>')
-
   } else {
     res
       .type('html')
-      .end(`
+      .write(`
         <a href="/login">login</a>
         <a href="/register">register</a>
       `)
   }
+
+  // 未登录也可查看帖子
+  res.write('<hr><ul>')
+  for (let post of posts) {
+    // date 转为 本地化时间，
+    // 存的时候为 new Date().toISOString()
+    res.write(`
+      <li>
+        <a href="/post/${post.id}">${post.title}</a>
+        <span><a href="/user/${post.author}">@${post.author}</a></span>
+        <span>${timeLocale(post.date)}</span>
+      </li>
+    `)
+  }
+  res.end('</ul>')
 
   next()
 })
@@ -104,7 +113,7 @@ app.post('/register', (req, res, next) => {
   // 防止传来 脏数据
   regInfo = {
     username: regInfo.username,
-    email   : regInfo.email,
+    email: regInfo.email,
     password: regInfo.email
   }
 
@@ -180,22 +189,63 @@ app.get('/logout', (req, res, next) => {
 app.get('/post/:id', (req, res, next) => {
   let post = posts.find(it => it.id == req.params.id)
   if (post) {
-    res.end(`
-      <h1>hello,
-        <a href="/user/${req.signedCookies.loginUser}">
-        ${req.signedCookies.loginUser}</a>
-      </h1>
-      <a href="/">home</a>
-      <a href="/register">register</a>
-      <a href="/logout">logout</a>
+    // 登录用户可发表评论
+    if (req.signedCookies.loginUser) {
+      res
+        .type('html')
+        .write(`
+          <h1>hello,
+            <a href="/user/${req.signedCookies.loginUser}">
+            ${req.signedCookies.loginUser}</a>
+          </h1>
+          <a href="/">home</a>
+          <a href="/register">register</a>
+          <a href="/logout">logout</a>
+          <hr>
+          <div>
+            <h2>${post.title}</h2>
+            <span>${timeLocale(post.date)}</span>
+            <span><a href="/user/${post.author}">@${post.author}</a></span>
+            <p>${post.text}</p>
+          </div>
+          <hr>
+        `)
 
-      <div>
-        <h2>${post.title}</h2>
-        <span>${new Date(post.date).toLocaleString()}</span>
-        <span><a href="/user/${post.author}">@${post.author}</a></span>
-        <p>${post.text}</p>
-      </div>
-    `)
+      // 加载已有评论
+      let thisComments = comments.filter(it => it.postID == req.params.id)
+      for (let comment of thisComments) {
+        res.write(`
+          <a href="/users/${comment.author}">${comment.author}</a>
+          <span>${timeLocale(comment.date)}</span>
+          <p>${comment.text}</p>
+        `)
+      }
+
+      res.end(`
+        <h2>回复帖子</h2>
+        <form action="/comment/${req.params.id}" method="post">
+          <textarea name="text" cols="30" rows="10"></textarea>
+          <button type="submit">发表评论</button>
+        </form>
+      `)
+    } else {
+      res
+        .type('html')
+        .end(`
+          <a href="/">home</a>
+          <a href="/register">register</a>
+          <a href="/login">login</a>
+
+          <div>
+            <h2>${post.title}</h2>
+            <span>${timeLocale(post.date)}</span>
+            <span><a href="/user/${post.author}">@${post.author}</a></span>
+            <p>${post.text}</p>
+          </div>
+
+          <a href="/login">请登录后 查看/发表 评论</a>
+        `)
+    }
   } else {
     res.end(`Not fount post ${req.params.id}`)
   }
@@ -207,11 +257,11 @@ app.post('/post', (req, res, next) => {
     let postInfo = req.body
     // 防止传来 脏数据
     postInfo = {
-      id      : Date.now(),
-      title   : postInfo.title,
-      text    : postInfo.text,
-      author  : req.signedCookies.loginUser,
-      date    : new Date().toISOString(),
+      id: Date.now(),
+      title: postInfo.title,
+      text: postInfo.text,
+      author: req.signedCookies.loginUser,
+      date: timeISO(),
       isDelete: false
     }
 
@@ -219,6 +269,26 @@ app.post('/post', (req, res, next) => {
     fs.writeFileSync('./posts.json', JSON.stringify(posts, null, 2))
     res.redirect('/')
   } else res.end('only logged in user can post')
+
+  next()
+})
+
+// comment
+app.post('/comment/:postID', (req, res, next) => {
+  if (req.signedCookies.loginUser) {
+    let commentInfo = req.body
+    commentInfo = {
+      postID: req.params.postID,
+      text: commentInfo.text,
+      date: timeISO(),
+      author: req.signedCookies.loginUser,
+    }
+    comments.push(commentInfo)
+    fs.writeFileSync('./comments.json', JSON.stringify(comments, null, 2))
+    res.redirect(`/post/${req.params.postID}`)
+  } else {
+    res.end('please login to comment')
+  }
 
   next()
 })
