@@ -1,0 +1,42 @@
+extend layout.pug
+
+
+block body
+  if post
+    div(class='post')
+      h3=post.title
+      span=post.author
+      span=post.date
+      p=post.text
+
+    if loginUser
+      div(class='comment-list')
+        if thisComments.length
+          h4 全部评论
+          each comment in thisComments
+            ul
+              li(class='comment')
+                p=comment.text
+                span=comment.date
+                a(
+                  href=`/user/${comment.author}`
+                  class='user'
+                )=comment.author
+        else
+          h4 暂无评论
+
+      div(class='add-post')
+        h2 评论帖子
+        form(action=`/comment/${post.id}`, method="post")
+          textarea(name="text", cols="30", rows="10")
+          br
+          button(type="submit") 评论
+    else
+      h3 请登录后 查看/发表 评论
+      a(
+        href='/login'
+        class='link'
+      ) 登录
+
+  else
+    h3 帖子不存在

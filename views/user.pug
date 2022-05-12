@@ -1,0 +1,40 @@
+extend layout.pug
+
+
+block body
+  if user
+    if (user.username != loginUser.username)
+      div(class='user-info')
+        h3
+          a(
+            href=`/user/${loginUser.username}`
+            class='user'
+          )=user.username
+          div(class='joinDate')
+            span 已加入
+            span=((Date.now() - user.joinDate) / 86400000 >> 0)
+            span 天
+
+    if userPosts.length
+      div(class='post-list')
+        h2 发过的帖子
+        ul
+          each post in userPosts
+            li(class='post')
+              a(
+                href=`/post/${post.id}`
+                class='post'
+              )=post.title
+              a(
+                href=`/user/${post.author}`
+                class='user'
+              )=post.author
+              span=post.date
+    else
+      div(class='post-list')
+        h2 暂未发帖
+
+  else
+    div(class='err-user')
+      span 用户
+        span user 不存在

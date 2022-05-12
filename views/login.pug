@@ -1,0 +1,17 @@
+extend layout.pug
+
+
+block body
+  div(class='login')
+      h2 登录
+      form(action="/login", method="post")
+        div(class='form-list')
+          span 用户名
+          br
+          input(type="text", name="username")
+        div(class='form-list')
+          span 密码
+          br
+          input(type="password", name="password")
+        div(class='form-list')
+          button(type="submit") 登录

@@ -1,0 +1,33 @@
+extend layout.pug
+
+
+block body
+  if loginUser
+    div(class='add-post')
+      h2 发布帖子
+      form(action="/post", method="post")
+        span 标题
+        br
+        input(type="text", name="title")
+        br
+        span 正文
+        br
+        textarea(name="text", cols="30", rows="10")
+        br
+        button(type="submit") 发帖
+
+  if posts.length
+    div(class='post-list')
+      h2 所有帖子
+      ul
+        each post in posts
+          li(class='post')
+            a(
+              href=`/post/${post.id}`
+              class='post'
+            )=post.title
+            a(
+              href=`/user/${post.author}`
+              class='user'
+            )=post.author
+            span=post.date

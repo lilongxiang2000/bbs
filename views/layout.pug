@@ -1,0 +1,32 @@
+doctype html
+html(lang="en")
+  head
+    title 论坛
+  body
+    div(class='header')
+      a(
+        href="/"
+        class='home'
+      ) 主页
+      a(
+        href='/register'
+        class='link'
+      ) 注册
+      if loginUser
+        a(
+          href='/logout'
+          class='link'
+        ) 登出
+        a(
+          href=`/user/${loginUser.username}`
+          class='user'
+        )=loginUser.username
+      else
+        a(
+          href='/login'
+          class='link'
+        ) 登录
+    div(class='body')
+      block body
+    div(class='fotter')
+      block fotter
