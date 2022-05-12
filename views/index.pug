@@ -3,31 +3,51 @@ extend layout.pug
 
 block body
   if loginUser
-    div(class='add-post')
-      h2 发布帖子
-      form(action="/post", method="post")
-        span 标题
-        br
-        input(type="text", name="title")
-        br
-        span 正文
-        br
-        textarea(name="text", cols="30", rows="10")
-        br
-        button(type="submit") 发帖
+    div(class='mt-3')
+      h3(class='text-center my-2') 发布帖子
+      form(
+        action="/post",
+        method="post",
+        class='mx-2'
+      )
+        div(class="form-group")
+          label(for="postTitle") 标题
+          input(
+            type="text",
+            class="form-control",
+            id="postTitle",
+            name='title'
+          )
+        div(class="form-group")
+          label(for="postText") 正文
+          textarea(
+            name="text",
+            class="form-control",
+            id="postText",
+            maxlength='400',
+            style='resize: none; height: 120px',
+          )
+        div(class='d-flex justify-content-around my-2')
+          button(
+            type="reset"
+            class="btn btn-sm btn-outline-primary"
+          ) 清空
+          button(
+            type="submit"
+            class="btn btn-sm btn-outline-primary"
+          ) 发帖
 
   if posts.length
-    div(class='post-list')
-      h2 所有帖子
-      ul
-        each post in posts
-          li(class='post')
-            a(
-              href=`/post/${post.id}`
-              class='post'
-            )=post.title
-            a(
-              href=`/user/${post.author}`
-              class='user'
-            )=post.author
-            span=post.date
+    div(class='overflow-auto mt-3')
+      h3(class='text-center my-2') 所有帖子
+      div(class='list-group active')
+        for post in posts.slice().reverse()
+          a(
+            href=`/post/${post.id}`,
+            class='list-group-item list-group-item-action'
+          )
+            div(class='d-flex w-100 justify-content-between')
+              h5(class='mb-1')=post.author
+              small=post.date
+            small=post.title
+

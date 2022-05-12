@@ -2,8 +2,31 @@ doctype html
 html(lang="en")
   head
     title 论坛
-  body
-    div(class='header')
+    link(
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+      crossorigin="anonymous"
+    )
+    style.
+      body { height: 100vh; }
+
+      .list-group-item-action:hover {
+        z-index: 1;
+        color: #0d6efd;
+        text-decoration: none;
+        background-color: #f8f9fa;
+      }
+      a {
+        color: #000;
+        text-decoration: none;
+      }
+      a:hover {
+        color: #0d6efd;
+      }
+
+  body(class='container')
+    div(class='d-flex justify-content-between')
       a(
         href="/"
         class='home'
@@ -26,7 +49,7 @@ html(lang="en")
           href='/login'
           class='link'
         ) 登录
-    div(class='body')
+    div(class='')
       block body
-    div(class='fotter')
+    div(class='')
       block fotter
