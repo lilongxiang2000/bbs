@@ -1,7 +1,6 @@
 const express      = require('express')
 const cookieParser = require('cookie-parser')
 const fs           = require('fs')
-const pug          = require('pug')
 
 
 const PORT     = 8080
@@ -122,17 +121,18 @@ app.post('/register', (req, res, next) => {
   let userInfo = {
     username: req.body.username,
     email: req.body.email,
-    password: req.body.email,
+    password: req.body.password,
     isDelete: false,
     joinDate: Date.now()
   }
 
   if ( // username | email 已经存在
-    users.some(it => it.username == userInfo.username) ||
-    users.some(it => it.email == userInfo.email)
-  ) {
-    res.type('html').render('registerErr.pug')
-  } else {
+    users.some(it =>
+      it.username == userInfo.username ||
+      it.email == userInfo.email
+    )
+  ) res.type('html').render('registerErr.pug')
+  else {
     users.push(userInfo)
     fs.writeFileSync('./users.json', JSON.stringify(users, null, 2))
     res.type('html').render('registerErrS.pug')
@@ -211,10 +211,12 @@ app.post('/post', (req, res, next) => {
       isDelete: false
     }
 
-    posts.push(postInfo)
-    fs.writeFileSync('./posts.json', JSON.stringify(posts, null, 2))
+    if (postInfo.title.length && postInfo.text.length) {
+      posts.push(postInfo)
+      fs.writeFileSync('./posts.json', JSON.stringify(posts, null, 2))
+    }
     res.redirect('/')
-  } else res.end('only logged in user can post')
+  }
 
   next()
 })
@@ -242,6 +244,6 @@ app.post('/comment/:postID', (req, res, next) => {
 
 
 
-app.listen(PORT, '127.0.0.1', () => {
+app.listen(PORT, () => {
   console.log('Listening on', PORT)
 })
