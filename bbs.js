@@ -238,7 +238,7 @@ app.post('/login', (req, res, next) => {
   } else {
     res
       .type('html')
-      .end('用户名或邮箱重复，请<a href="/register">重新注册</a>')
+      .end('用户名或密码错误，请检查后<a href="/login">重新登录</a>')
   }
 
   next()
