@@ -16,6 +16,23 @@ function timeISO() {
 function timeLocale(time) {
   return new Date(time).toLocaleString()
 }
+/** Converts the characters "&", "<", ">", '"',
+ * and "'" in string to their corresponding HTML entities.
+ * @param {*} str
+ * @returns {String}
+ */
+ function escapeHTML(str) {
+  // 防止 sxx 攻击
+  str = str.toString()
+
+  str = str.split('&').join('&amp;')
+  str = str.split('<').join('&lt;')
+  str = str.split('>').join('&gt;')
+  str = str.split('"').join('&quot;')
+  str = str.split("'").join('&#39;')
+
+  return str
+}
 
 /*
   http://localhost:8080/
@@ -37,6 +54,18 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser('bbs'))
 
+// 防止 xss 攻击
+app.post('*', (req, res, next) => {
+  if (req.body) {
+    console.dir(req.body)
+    for (let key in req.body) {
+      req.body[key] = escapeHTML(req.body[key])
+    }
+    console.dir(req.body)
+  }
+
+  next()
+})
 
 // ./
 app.get('/', (req, res, next) => {
