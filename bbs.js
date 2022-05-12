@@ -1,12 +1,13 @@
-const express = require('express')
+const express      = require('express')
 const cookieParser = require('cookie-parser')
-const fs = require('fs')
+const fs           = require('fs')
+const pug          = require('pug')
 
 
-const PORT = 8080
-const app = express()
-const users = JSON.parse(fs.readFileSync('./users.json'))
-const posts = JSON.parse(fs.readFileSync('./posts.json'))
+const PORT     = 8080
+const app      = express()
+const users    = JSON.parse(fs.readFileSync('./users.json'))
+const posts    = JSON.parse(fs.readFileSync('./posts.json'))
 const comments = JSON.parse(fs.readFileSync('./comments.json'))
 
 
