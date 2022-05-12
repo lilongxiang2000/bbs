@@ -11,11 +11,8 @@ const posts    = JSON.parse(fs.readFileSync('./posts.json'))
 const comments = JSON.parse(fs.readFileSync('./comments.json'))
 
 
-function timeISO() {
-  return new Date().toISOString()
-}
-function timeLocale(time) {
-  return new Date(time).toLocaleString()
+function timeLocale() {
+  return new Date().toLocaleString()
 }
 /** Converts the characters "&", "<", ">", '"',
  * and "'" in string to their corresponding HTML entities.
@@ -48,6 +45,7 @@ function timeLocale(time) {
 
 app.use((req, res, next) => {
   console.log(req.method, req.url)
+
   next()
 })
 
@@ -68,49 +66,24 @@ app.post('*', (req, res, next) => {
   next()
 })
 
+// 将当前登录用户保存到 req.body.self
+app.get('*', (req, res, next) => {
+  if (req.signedCookies.loginUser) {
+    req.body.self = users.find(it =>
+      it.username == req.signedCookies.loginUser
+    )
+  }
+
+  next()
+})
+
 // ./
 app.get('/', (req, res, next) => {
-  if (req.signedCookies.loginUser) {
-    res
-      .type('html')
-      .write(`
-        <h1>hello,
-          <a href="/user/${req.signedCookies.loginUser}">
-          ${req.signedCookies.loginUser}</a>
-        </h1>
-        <a href="/register">注册</a>
-        <a href="/logout">登出</a>
-
-        <form action="/post" method="post">
-          <span>标题</span><input type="text" name="title"><br>
-          <span>正文</span><br>
-          <textarea name="text" cols="30" rows="10"></textarea><br>
-          <input type="submit" value="发帖">
-        </form>
-      `)
-  } else {
-    res
-      .type('html')
-      .write(`
-        <a href="/register">注册</a>
-        <a href="/login">登录</a>
-      `)
-  }
-
-  // 未登录也可查看帖子
-  res.write('<hr><ul>')
-  for (let post of posts) {
-    // date 转为 本地化时间，
-    // 存的时候为 new Date().toISOString()
-    res.write(`
-      <li>
-        <a href="/post/${post.id}">${post.title}</a>
-        <span><a href="/user/${post.author}">@${post.author}</a></span>
-        <span>${timeLocale(post.date)}</span>
-      </li>
-    `)
-  }
-  res.end('</ul>')
+  res.type('html').render('index.pug', {
+    posts: posts,
+    loginUser: req.signedCookies.loginUser
+      ? req.body.self : null,
+  })
 
   next()
 })
@@ -118,65 +91,21 @@ app.get('/', (req, res, next) => {
 
 // user
 app.get('/user/:username', (req, res, next) => {
-  // Array.prototype.find() return 'it' not boolean
-  let user = users.find(it => it.username == req.params.username)
-  if (user) {
-    // header 显示内容
-    if (req.signedCookies.loginUser) {
-      let self = users.find(it => it.username == req.signedCookies.loginUser)
-      res
-        .type('html')
-        .write(`
-          <h1>hello,
-            <a href="/user/${req.signedCookies.loginUser}">
-              ${req.signedCookies.loginUser}
-            </a>
-          </h1>
-          <span>已加入 ${(Date.now() - self.joinDate) / 86400000 >> 0} 天</span>
-          <a href="/">home</a>
-          <a href="/logout">logout</a>
-          <a href="/setting">setting</a>
-        `)
-    } else {
-      res
-        .type('html')
-        .write(`
-          <a href="/">主页</a>
-          <a href="/register">注册</a>
-          <a href="/login">登录</a>
-        `)
-    }
 
-    res.write('<hr>')
-    // 查看的用户信息
-    // 查看的用户不是自己时
-    if (req.signedCookies.loginUser != user.username) {
-      res.write(`
-        <h1>username:
-          <a href="/user/${user.username}">
-            ${user.username}
-          </a>
-        </h1>
-        <span>已加入 ${(Date.now() - user.joinDate) / 86400000 >> 0} 天</span>
-        <hr>
-      `)
-    }
+  let user = users.find(it =>
+    it.username == req.params.username
+  )
 
-    // 加载发布过的帖子
-    res.write('<ul>')
-    let thisPosts = posts.filter(it => it.author == user.username)
-    for (let it of thisPosts) {
-      // date 转为 本地化时间，
-      // 存的时候为 new Date().toISOString()
-      res.write(`
-        <li>
-          <a href="/post/${it.id}">${it.title}</a>
-          <span>${timeLocale(it.date)}</span>
-        </li>
-      `)
-    }
-    res.end('</ul>')
-  } else res.end(`Not fount user ${req.params.username}`)
+  let userPosts = user ? posts.filter(it =>
+    it.author == user.username
+  ) : []
+
+  res.type('html').render('user.pug', {
+    loginUser: req.signedCookies.loginUser
+      ? req.body.self : null,
+    user: user,
+    userPosts: userPosts
+  })
 
   next()
 })
@@ -184,20 +113,7 @@ app.get('/user/:username', (req, res, next) => {
 
 // register
 app.get('/register', (req, res, next) => {
-  res
-    .type('html')
-    .end(`
-      <h1>注册</h1>
-      <a href="/">主页</a>
-      <a href="/login">登录</a>
-      <form action="/register" method="post">
-        <div>Name: <input name="username" type="text"></div>
-        <div>Email: <input name="email" type="email"></div>
-        <div>Password: <input name="password" type="password"></div>
-        <div>Password-2: <input type="password"></div>
-        <button type="submit">注册</button>
-      </form>
-    `)
+  res.type('html').render('register.pug')
 
   next()
 })
@@ -215,15 +131,11 @@ app.post('/register', (req, res, next) => {
     users.some(it => it.username == userInfo.username) ||
     users.some(it => it.email == userInfo.email)
   ) {
-    res
-      .type('html')
-      .end('用户名或邮箱重复，请<a href="/register">重新注册</a>')
+    res.type('html').render('registerErr.pug')
   } else {
     users.push(userInfo)
     fs.writeFileSync('./users.json', JSON.stringify(users, null, 2))
-    res
-      .type('html')
-      .end('注册成功，<a href="/login">去登录</a>')
+    res.type('html').render('registerErrS.pug')
   }
 
   next()
@@ -232,44 +144,31 @@ app.post('/register', (req, res, next) => {
 
 // login
 app.get('/login', (req, res, next) => {
-  res
-    .type('html')
-    .end(`
-      <h1>登录</h1>
-      <a href="/">主页</a>
-      <a href="/register">注册</a>
-      <form action="/login" method="post">
-        <div>Name: <input name="username" type="text"></div>
-        <div>Password: <input name="password" type="password"></div>
-        <button type="submit">登录</button>
-      </form>
-    `)
+  if (req.signedCookies.loginUser) {
+    res.redirect('/')
+  } else res.type('html').render('login.pug')
 
   next()
 })
 app.post('/login', (req, res, next) => {
-  let loginInfo = req.body
   // 防止传来 脏数据
-  loginInfo = {
-    username: loginInfo.username,
-    password: loginInfo.password
+  let loginInfo = {
+    username: req.body.username,
+    password: req.body.password
   }
 
   let user = users.find(it =>
     it.username == loginInfo.username &&
     it.password == loginInfo.password
   )
+
   if (user) {
     res.cookie('loginUser', loginInfo.username, {
-      maxAge: 86400000, // 单位 毫秒 一天
+      maxAge: 86400000, // 一天
       signed: true,
     })
     res.redirect('/')
-  } else {
-    res
-      .type('html')
-      .end('用户名或密码错误，请检查后<a href="/login">重新登录</a>')
-  }
+  } else res.type('html').render('loginErr.pug')
 
   next()
 })
@@ -286,67 +185,17 @@ app.get('/logout', (req, res, next) => {
 // post
 app.get('/post/:id', (req, res, next) => {
   let post = posts.find(it => it.id == req.params.id)
-  if (post) {
-    // 登录用户可发表评论
-    if (req.signedCookies.loginUser) {
-      res
-        .type('html')
-        .write(`
-          <h1>hello,
-            <a href="/user/${req.signedCookies.loginUser}">
-            ${req.signedCookies.loginUser}</a>
-          </h1>
-          <a href="/">主页</a>
-          <a href="/register">注册</a>
-          <a href="/logout">登出</a>
-          <hr>
-          <div>
-            <h2>${post.title}</h2>
-            <span>${timeLocale(post.date)}</span>
-            <span><a href="/user/${post.author}">@${post.author}</a></span>
-            <p>${post.text}</p>
-          </div>
-          <hr>
-        `)
 
-      // 加载已有评论
-      let thisComments = comments.filter(it => it.postID == req.params.id)
-      for (let comment of thisComments) {
-        res.write(`
-          <a href="/user/${comment.author}">${comment.author}</a>
-          <span>${timeLocale(comment.date)}</span>
-          <p>${comment.text}</p>
-        `)
-      }
+  let thisComments = post ? comments.filter(it =>
+    it.postID == post.id
+  ) : []
 
-      res.end(`
-        <h2>回复帖子</h2>
-        <form action="/comment/${req.params.id}" method="post">
-          <textarea name="text" cols="30" rows="10"></textarea>
-          <button type="submit">发表评论</button>
-        </form>
-      `)
-    } else {
-      res
-        .type('html')
-        .end(`
-          <a href="/">主页</a>
-          <a href="/register">注册</a>
-          <a href="/login">登录</a>
+  res.type('html').render('post.pug', {
+    loginUser: req.body.self,
+    post,
+    thisComments
+  })
 
-          <div>
-            <h2>${post.title}</h2>
-            <span>${timeLocale(post.date)}</span>
-            <span><a href="/user/${post.author}">@${post.author}</a></span>
-            <p>${post.text}</p>
-          </div>
-
-          <a href="/login">请登录后 查看/发表 评论</a>
-        `)
-    }
-  } else {
-    res.end(`Not fount post ${req.params.id}`)
-  }
   next()
 })
 app.post('/post', (req, res, next) => {
@@ -358,7 +207,7 @@ app.post('/post', (req, res, next) => {
       title: req.body.title,
       text: req.body.text,
       author: req.signedCookies.loginUser,
-      date: timeISO(),
+      date: timeLocale(),
       isDelete: false
     }
 
@@ -379,16 +228,14 @@ app.post('/comment/:postID', (req, res, next) => {
       id: `${Date.now()}`,
       postID: req.params.postID,
       text: req.body.text,
-      date: timeISO(),
+      date: timeLocale(),
       author: req.signedCookies.loginUser,
       isDelete: false
     }
     comments.push(commentInfo)
     fs.writeFileSync('./comments.json', JSON.stringify(comments, null, 2))
     res.redirect(`/post/${req.params.postID}`)
-  } else {
-    res.end('请登录后在发表评论')
-  }
+  } else res.redirect('/login')
 
   next()
 })
