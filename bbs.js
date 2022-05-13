@@ -79,7 +79,7 @@ app.get('*', (req, res, next) => {
 // ./
 app.get('/', (req, res, next) => {
   res.type('html').render('index.pug', {
-    posts: posts,
+    posts: posts.slice(-10).reverse(),
     loginUser: req.signedCookies.loginUser
       ? req.body.self : null,
   })
