@@ -9,7 +9,8 @@ html(lang="en")
       crossorigin="anonymous"
     )
     style.
-      body { height: 100vh; }
+      a { text-decoration: none; }
+      a:hover { color: #0d6efd; }
 
       .list-group-item-action:hover {
         z-index: 1;
@@ -17,38 +18,22 @@ html(lang="en")
         text-decoration: none;
         background-color: #f8f9fa;
       }
-      a {
-        color: #000;
-        text-decoration: none;
-      }
-      a:hover {
-        color: #0d6efd;
-      }
 
-  body(class='container')
-    div(class='d-flex justify-content-between')
-      a(
-        href="/"
-        class='home'
-      ) 主页
-      a(
-        href='/register'
-        class='link'
-      ) 注册
+  body(class='container 100vh')
+    div(class='nav nav-pills nav-fill')
+      .nav-item
+        a.nav-link(href="/") 主页
+      .nav-item
+        a.nav-link(href='/register') 注册
       if loginUser
-        a(
-          href='/logout'
-          class='link'
-        ) 登出
-        a(
-          href=`/user/${loginUser.username}`
-          class='user'
-        )=loginUser.username
+        .nav-item
+          a.nav-link(href='/logout') 退出
+        .nav-item
+          a.nav-link(href=`/user/${loginUser.username}`)
+            =loginUser.username
       else
-        a(
-          href='/login'
-          class='link'
-        ) 登录
+        .nav-item
+          a.nav-link(href='/login') 登录
     div(class='')
       block body
     div(class='')

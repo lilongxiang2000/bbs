@@ -3,13 +3,9 @@ extend layout.pug
 
 block body
   if loginUser
-    div(class='mt-3')
-      h3(class='text-center my-2') 发布帖子
-      form(
-        action="/post",
-        method="post",
-        class='mx-2'
-      )
+    div.my-3
+      h3.text-center.my-2 发布帖子
+      form(action="/post", method="post")
         div(class="form-group")
           label(for="postTitle") 标题
           input(
@@ -27,21 +23,22 @@ block body
             maxlength='400',
             style='resize: none; height: 120px',
           )
-        div(class='d-flex justify-content-around my-2')
-          button(
-            type="reset"
-            class="btn btn-sm btn-outline-primary"
-          ) 清空
-          button(
-            type="submit"
-            class="btn btn-sm btn-outline-primary"
-          ) 发帖
+        div(class='d-flex justify-content-end my-2')
+          div(class='btn-group')
+            button(
+              type="reset"
+              class="btn btn-outline-primary"
+            ) 清空
+            button(
+              type="submit"
+              class="btn btn-outline-primary"
+            ) 发帖
 
   if posts.length
-    div(class='overflow-auto mt-3')
-      h3(class='text-center my-2') 所有帖子
-      div(class='list-group active')
-        for post in posts.slice().reverse()
+    div(class='my-3')
+      h3(class='text-center my-2') 最近帖子
+      div(class='list-group active overflow-auto')
+        for post in posts
           a(
             href=`/post/${post.id}`,
             class='list-group-item list-group-item-action'
@@ -50,4 +47,3 @@ block body
               h5(class='mb-1')=post.author
               small=post.date
             small=post.title
-

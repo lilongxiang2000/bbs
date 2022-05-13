@@ -2,17 +2,44 @@ extend layout.pug
 
 
 block body
-  div(class='register')
-      h2 用户注册
-      form(action="/register", method="post")
-        div(class='form-list')
-          span 用户名
-          input(type="text", name="username")
-        div(class='form-list')
-          span 邮箱
-          input(type="email", name="email")
-        div(class='form-list')
-          span 密码
-          input(type="password", name="password")
-        div(class='form-list')
-          button(type="submit") 注册
+  div.register
+    h3.text-center.my-2 注册
+    form(action="/register", method="post")
+      div(class='form-list')
+        label(for="postUsername") 用户名
+        input.form-control(
+          type="text"
+          id="postUsername"
+          name='username'
+        )
+      div(class='form-list')
+        label(for="postEmail") 邮箱
+        input.form-control(
+          type="email"
+          id="postEmail"
+          name='email'
+        )
+      div(class='form-list')
+        label(for="postPassword") 密码
+        input.form-control(
+          type="password"
+          id='postPassword'
+          name="password"
+        )
+      div(class='form-list')
+        label(for="postPassword2") 确认密码
+        input.form-control(
+          type="password"
+          id='postPassword2'
+          name="password2"
+        )
+      div(class='d-flex justify-content-end my-2')
+        div(class='btn-group')
+          button(
+            type="reset"
+            class="btn btn-outline-primary"
+          ) 清空
+          button(
+            type="submit"
+            class="btn btn-outline-primary"
+          ) 注册

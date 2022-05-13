@@ -3,10 +3,11 @@ extend layout.pug
 
 block body
   if post
-    div(class='post')
-      h3=post.title
-      span=post.author
-      span=post.date
+    div.post.my-3
+      h3.text-center.my-2=post.title
+      div.d-flex.justify-content-between
+        a.user(href=`/user/${post.author}`)=post.author
+        span=post.date
       p=post.text
 
     if loginUser
