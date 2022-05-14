@@ -13,31 +13,42 @@ block body
     if loginUser
       div(class='comment-list')
         if thisComments.length
-          h4 全部评论
-          each comment in thisComments
-            ul
-              li(class='comment')
-                p=comment.text
-                span=comment.date
-                a(
-                  href=`/user/${comment.author}`
-                  class='user'
-                )=comment.author
-        else
-          h4 暂无评论
+          h3.text-center.my-2 全部评论
+          div.list-group-active
+          for comment in thisComments
+            div.list-group-item.list-group-item-action
+              div(class='d-flex w-100 justify-content-between')
+                a.mb-1(
+                  href=`/user/${post.author}`
+                )=post.author
+                small=comment.date
+              p=comment.text
 
-      div(class='add-post')
-        h2 评论帖子
+      div(class='add-comment')
+        h3.text-center.my-2 评论帖子
         form(action=`/comment/${post.id}`, method="post")
-          textarea(name="text", cols="30", rows="10")
-          br
-          button(type="submit") 评论
+          .form-group
+            textarea.form-control(
+              name="text"
+              maxlength='200'
+              wrap='hard'
+            )
+          div(class='d-flex justify-content-end my-2')
+            .btn-group
+              button(
+                type="reset"
+                class="btn btn-outline-primary"
+              ) 清空
+              button(
+                type="submit"
+                class="btn btn-outline-primary"
+              ) 评论
     else
-      h3 请登录后 查看/发表 评论
+      h3.text-center.my-2 请登录后 查看/发表 评论
       a(
         href='/login'
         class='link'
       ) 登录
 
   else
-    h3 帖子不存在
+    h3.text-center.my-2 帖子不存在

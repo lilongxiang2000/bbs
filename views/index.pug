@@ -6,22 +6,21 @@ block body
     div.my-3
       h3.text-center.my-2 发布帖子
       form(action="/post", method="post")
-        div(class="form-group")
+        .form-group
           label(for="postTitle") 标题
           input(
-            type="text",
-            class="form-control",
-            id="postTitle",
+            type="text"
+            class="form-control"
+            id="postTitle"
             name='title'
+            maxlength='20'
           )
-        div(class="form-group")
+        .form-group
           label(for="postText") 正文
-          textarea(
-            name="text",
-            class="form-control",
-            id="postText",
-            maxlength='400',
-            style='resize: none; height: 120px',
+          textarea.form-control(
+            name="text"
+            id="postText"
+            wrap='hard'
           )
         div(class='d-flex justify-content-end my-2')
           div(class='btn-group')
@@ -35,7 +34,7 @@ block body
             ) 发帖
 
   if posts.length
-    div(class='my-3')
+    div.my-3
       h3(class='text-center my-2') 最近帖子
       div(class='list-group active overflow-auto')
         for post in posts
