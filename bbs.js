@@ -55,11 +55,13 @@ app.use(cookieParser('bbs'))
 // 防止 xss 攻击
 app.post('*', (req, res, next) => {
   if (req.body) {
-    console.dir(req.body)
     for (let key in req.body) {
-      req.body[key] = escapeHTML(req.body[key])
+      let newHTML = escapeHTML(req.body[key])
+      if (newHTML != req.body[key]) {
+        console.warn('xss!!!', req.body[key])
+        req.body[key] = '' // 后续会过滤掉长度为 0 的 post
+      }
     }
-    console.dir(req.body)
   }
 
   next()
@@ -146,9 +148,13 @@ app.post('/register', (req, res, next) => {
 
 // login
 app.get('/login', (req, res, next) => {
+  let back = req.get('referer') ?? '/'
+
   if (req.signedCookies.loginUser) {
     res.redirect('/')
-  } else res.type('html').render('login.pug')
+  } else res.type('html').render('login.pug', {
+    back: back
+  })
 
   next()
 })
@@ -158,6 +164,8 @@ app.post('/login', (req, res, next) => {
     username: req.body.username,
     password: req.body.password
   }
+
+  let back = req.query.back ?? '/'
 
   let user = users.find(it =>
     it.username == loginInfo.username &&
@@ -169,7 +177,7 @@ app.post('/login', (req, res, next) => {
       maxAge: 86400000, // 一天
       signed: true,
     })
-    res.redirect('/')
+    res.redirect(back)
   } else res.type('html').render('loginErr.pug')
 
   next()
@@ -178,8 +186,11 @@ app.post('/login', (req, res, next) => {
 
 // logout
 app.get('/logout', (req, res, next) => {
+  let back = req.get('referer') ?? '/'
+
   res.clearCookie('loginUser')
-  res.redirect('/') // 回到主页
+  res.redirect(back) // 回到主页
+
   next()
 })
 
