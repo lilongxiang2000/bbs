@@ -95,16 +95,18 @@ app.get('/user/:username', (req, res, next) => {
     it.username == req.params.username
   )
 
-  let userPosts = user ? posts.filter(it =>
-    it.author == user.username
-  ) : []
+  if (user) {
+    let userPosts = posts.filter(it =>
+      it.author == user.username
+    )
 
-  res.type('html').render('user.pug', {
-    loginUser: req.signedCookies.loginUser
-      ? req.body.self : null,
-    user: user,
-    userPosts: userPosts
-  })
+    res.type('html').render('user.pug', {
+      loginUser: req.signedCookies.loginUser
+        ? req.body.self : null,
+      user: user,
+      userPosts: userPosts
+    })
+  } else res.type('html').render('404.pug')
 
   next()
 })
@@ -186,15 +188,17 @@ app.get('/logout', (req, res, next) => {
 app.get('/post/:id', (req, res, next) => {
   let post = posts.find(it => it.id == req.params.id)
 
-  let thisComments = post ? comments.filter(it =>
-    it.postID == post.id
-  ) : []
+  if (post) {
+    let thisComments = comments.filter(it =>
+      it.postID == post.id
+    )
 
-  res.type('html').render('post.pug', {
-    loginUser: req.body.self,
-    post,
-    thisComments
-  })
+    res.type('html').render('post.pug', {
+      loginUser: req.body.self,
+      post,
+      thisComments
+    })
+  } else res.type('html').render('404.pug')
 
   next()
 })
