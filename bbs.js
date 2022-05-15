@@ -1,6 +1,7 @@
 const express      = require('express')
 const cookieParser = require('cookie-parser')
 const fs           = require('fs')
+const svgCaptcha   = require('svg-captcha')
 
 
 const PORT     = 8080
@@ -162,7 +163,8 @@ app.post('/login', (req, res, next) => {
   // 防止传来 脏数据
   let loginInfo = {
     username: req.body.username,
-    password: req.body.password
+    password: req.body.password,
+    captcha: req.body.captcha == req.body.captchacText
   }
 
   let back = req.query.back ?? '/'
@@ -172,13 +174,26 @@ app.post('/login', (req, res, next) => {
     it.password == loginInfo.password
   )
 
-  if (user) {
+  if (user && loginInfo.captcha) {
     res.cookie('loginUser', loginInfo.username, {
       maxAge: 86400000, // 一天
       signed: true,
     })
     res.redirect(back)
   } else res.type('html').render('loginErr.pug')
+
+  next()
+})
+
+
+app.get('/captcha', (req, res, next) => {
+  let captcha = svgCaptcha.create({
+    color: true,
+    noise: 4,
+    ignoreChars: '0o1i'
+  })
+  req.body.captchacText = captcha.text
+  res.type('svg').end(captcha.data)
 
   next()
 })
@@ -256,7 +271,6 @@ app.post('/comment/:postID', (req, res, next) => {
 
   next()
 })
-
 
 
 app.listen(PORT, () => {
