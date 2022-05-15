@@ -26,7 +26,7 @@ block body
 
       div(class='add-comment')
         h3.text-center.my-2 评论帖子
-        form(action='/comment', method="post")
+        form(action=`/comment/${post.id}`, method="post")
           .form-group
             textarea.form-control(
               name="text"
