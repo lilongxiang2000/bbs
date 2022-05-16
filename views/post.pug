@@ -8,7 +8,24 @@ block body
       div.d-flex.justify-content-between
         a.user(href=`/user/${post.author}`)=post.author
         span=post.date
-      p=post.text
+      div.my-2
+        if loginUser && loginUser.username == post.author
+          button.btn.btn-outline-primary.float-end(
+            class='deletePost'
+            data-post-id=post.id
+          ) 删除
+          script.
+            $('.deletePost').on('click', async e => {
+              let postID = e.target.dataset.postId
+              if (confirm('确认删除吗？')) {
+                await fetch(`/post/${postID}`, {
+                  method: 'delete'
+                })
+
+                location.href = '/'
+              }
+            })
+        p=post.text
 
     if loginUser
       div(class='comment-list')

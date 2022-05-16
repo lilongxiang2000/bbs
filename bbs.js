@@ -7,9 +7,9 @@ const md5          = require('md5')
 
 const PORT     = 8080
 const app      = express()
-const users    = JSON.parse(fs.readFileSync('./users.json'))
-const posts    = JSON.parse(fs.readFileSync('./posts.json'))
-const comments = JSON.parse(fs.readFileSync('./comments.json'))
+const USERS    = JSON.parse(fs.readFileSync('./users.json'))
+const POSTS    = JSON.parse(fs.readFileSync('./posts.json'))
+const COMMENTS = JSON.parse(fs.readFileSync('./comments.json'))
 
 
 function timeLocale() {
@@ -33,16 +33,10 @@ function escapeHTML(str) {
   return str
 }
 
-
-app.use((req, res, next) => {
-  console.log(req.method, req.url)
-
-  next()
-})
-
 // 解码 url 编码请求体
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser('bbs'))
+
 
 // 防止 xss 攻击
 app.post('*', (req, res, next) => {
@@ -59,10 +53,11 @@ app.post('*', (req, res, next) => {
   next()
 })
 
+
 // 将当前登录用户保存到 req.body.self
 app.get('*', (req, res, next) => {
   if (req.signedCookies.loginUser) {
-    req.body.self = users.find(it =>
+    req.body.self = USERS.find(it =>
       it.username == req.signedCookies.loginUser
     )
   }
@@ -70,16 +65,6 @@ app.get('*', (req, res, next) => {
   next()
 })
 
-// ./
-app.get('/', (req, res, next) => {
-  res.type('html').render('index.pug', {
-    posts: posts.slice(-10).reverse(),
-    loginUser: req.signedCookies.loginUser
-      ? req.body.self : null,
-  })
-
-  next()
-})
 
 const sessionObjs = {}
 app.use(function sessionMW(req, res, next) {
@@ -94,16 +79,50 @@ app.use(function sessionMW(req, res, next) {
   next()
 })
 
+
+// ./
+app.get('/', (req, res, next) => {
+  // 按时间显示最近 10 篇帖子
+  let showPosts = [], idx = POSTS.length-1
+  while (showPosts.length < 10) {
+    if (idx < 0) break
+    if (!POSTS[idx].isDelete) {
+      showPosts.push(POSTS[idx--])
+    } else idx--
+  }
+
+  res.type('html').render('index.pug', {
+    posts: showPosts,
+    loginUser: req.signedCookies.loginUser
+      ? req.body.self : null,
+  })
+
+  next()
+})
+
+
+app.get('/captcha', (req, res, next) => {
+  let captcha = svgCaptcha.create({
+    color: true,
+    noise: 4,
+    ignoreChars: '0oOI1i'
+  })
+  req.session.captcha = captcha.text
+  res.type('svg').end(captcha.data)
+
+  next()
+})
+
 // user
 app.get('/user/:username', (req, res, next) => {
 
-  let user = users.find(it =>
-    it.username == req.params.username
+  let user = USERS.find(it =>
+    !it.isDelete && it.username == req.params.username
   )
 
   if (user) {
-    let userPosts = posts.filter(it =>
-      it.author == user.username
+    let userPosts = POSTS.filter(it =>
+      !it.isDelete && it.author == user.username
     )
 
     res.type('html').render('user.pug', {
@@ -135,14 +154,14 @@ app.post('/register', (req, res, next) => {
   }
 
   if ( // username | email 已经存在
-    users.some(it =>
+    USERS.some(it =>
       it.username == userInfo.username ||
       it.email == userInfo.email
     )
   ) res.type('html').render('registerErr.pug')
   else {
-    users.push(userInfo)
-    fs.writeFileSync('./users.json', JSON.stringify(users, null, 2))
+    USERS.push(userInfo)
+    fs.writeFileSync('./users.json', JSON.stringify(USERS, null, 2))
     res.type('html').render('registerErrS.pug')
   }
 
@@ -171,7 +190,7 @@ app.post('/login', (req, res, next) => {
     ? req.session.captcha == req.body.captcha
     : true
 
-  let user = users.find(it =>
+  let user = USERS.find(it =>
     it.username == loginInfo.username &&
     it.password == loginInfo.password
   )
@@ -192,19 +211,6 @@ app.post('/login', (req, res, next) => {
 })
 
 
-app.get('/captcha', (req, res, next) => {
-  let captcha = svgCaptcha.create({
-    color: true,
-    noise: 4,
-    ignoreChars: '0oOI1i'
-  })
-  req.session.captcha = captcha.text
-  res.type('svg').end(captcha.data)
-
-  next()
-})
-
-
 // logout
 app.get('/logout', (req, res, next) => {
   let back = req.get('referer') ?? '/'
@@ -218,19 +224,38 @@ app.get('/logout', (req, res, next) => {
 
 // post
 app.get('/post/:id', (req, res, next) => {
-  let post = posts.find(it => it.id == req.params.id)
+  let post = POSTS.find(it =>
+    !it.isDelete && it.id == req.params.id
+  )
 
   if (post) {
-    let thisComments = comments.filter(it =>
-      it.postID == post.id
+    let thisComments = COMMENTS.filter(it =>
+      !it.isDelete && it.postID == post.id
     )
 
     res.type('html').render('post.pug', {
-      loginUser: req.body.self,
+      loginUser: req.body.self ?? null,
       post,
       thisComments
     })
   } else res.type('html').render('404.pug')
+
+  next()
+})
+app.delete('/post/:id', (req, res, next) => {
+  if (req.signedCookies.loginUser) {
+    let idx = POSTS.findIndex(it =>
+      !it.isDelete && it.id == req.params.id
+    )
+
+    if (idx >= 0 && POSTS[idx].author == req.signedCookies.loginUser) {
+      POSTS[idx].isDelete = true
+      fs.writeFileSync(
+        './posts.json',
+        JSON.stringify(POSTS, null, 2)
+      )
+    }
+  } else res.redirect('/login')
 
   next()
 })
@@ -248,8 +273,8 @@ app.post('/post', (req, res, next) => {
     }
 
     if (postInfo.title?.length && postInfo.text?.length) {
-      posts.push(postInfo)
-      fs.writeFileSync('./posts.json', JSON.stringify(posts, null, 2))
+      POSTS.push(postInfo)
+      fs.writeFileSync('./posts.json', JSON.stringify(POSTS, null, 2))
     }
     res.redirect(`/post/${postInfo.id}`)
   }
@@ -270,14 +295,44 @@ app.post('/comment/:postID', (req, res, next) => {
       author  : req.signedCookies.loginUser,
       isDelete: false
     }
-    comments.push(commentInfo)
-    fs.writeFileSync('./comments.json', JSON.stringify(comments, null, 2))
+    COMMENTS.push(commentInfo)
+    fs.writeFileSync('./comments.json', JSON.stringify(COMMENTS, null, 2))
     res.redirect(`/post/${req.params.postID}`)
   } else res.redirect('/login')
 
   next()
 })
+app.delete('/comment/:commentID', (req, res, next) => {
+  if (req.signedCookies.loginUser) {
+    let idx = COMMENTS.findIndex(it =>
+      !it.isDelete && it.id == req.params.commentID &&
+      it.comment
+    )
+    if (idx >= 0) {
+      if (COMMENTS[idx].author == req.signedCookies.loginUser) {
+        COMMENTS[idx].isDelete = true
+        fs.writeFileSync(
+          './comments.json',
+          JSON.stringify(COMMENTS, null, 2)
+        )
+      } else {
+        // 判断当前评论是否在 登录用户 的帖子下
+        let toPost = POSTS.find(it =>
+          !it.isDelete && it.id == COMMENTS[idx].postID
+        )
+        if (toPost && toPost.author == req.signedCookies.loginUser) {
+          COMMENTS[idx].isDelete = true
+          fs.writeFileSync(
+            './comments.json',
+            JSON.stringify(COMMENTS, null, 2)
+          )
+        } else res.end('No permission')
+      }
+    } else res.end('comment not found')
+  } else res.redirect('/login')
 
+  next()
+})
 
 app.listen(PORT, '127.0.0.1', () => {
   console.log('Listening on', PORT)
