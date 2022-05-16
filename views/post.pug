@@ -20,7 +20,7 @@ block body
               div(class='d-flex w-100 justify-content-between')
                 a.mb-1(
                   href=`/user/${post.author}`
-                )=post.author
+                )=comment.author
                 small=comment.date
               p=comment.text
 
@@ -29,9 +29,9 @@ block body
         form(action=`/comment/${post.id}`, method="post")
           .form-group
             textarea.form-control(
-              name="text"
-              maxlength='200'
-              wrap='hard'
+              name      = "text"
+              maxlength = '200'
+              wrap      = 'hard'
             )
           div(class='d-flex justify-content-end my-2')
             .btn-group
