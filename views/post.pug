@@ -39,7 +39,23 @@ block body
                   href=`/user/${post.author}`
                 )=comment.author
                 small=comment.date
-              p=comment.text
+              .d-flex.justify-content-between.my-2
+                span=comment.text
+                button.btn.btn-outline-primary(
+                  class='deleteComment'
+                  data-comment-id=comment.id
+                ) 删除
+          script.
+            $('.deleteComment').on('click', async e => {
+              let commentID = e.target.dataset.commentId
+              if (confirm('确认删除吗？')) {
+                await fetch(`/comment/${commentID}`, {
+                  method: 'delete'
+                })
+
+                location.href = '/post/#{post.id}'
+              }
+            })
 
       div(class='add-comment')
         h3.text-center.my-2 评论帖子

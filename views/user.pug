@@ -30,7 +30,7 @@ block body
               await fetch(`/post/${postID}`, {
                 method: 'delete'
               })
-              location.href = `/user/${location.href.split('/').at(-1)}`
+              location.href = '/user/#{user.id}'
             }
           })
     else

@@ -303,11 +303,11 @@ app.post('/comment/:postID', (req, res, next) => {
   next()
 })
 app.delete('/comment/:commentID', (req, res, next) => {
+  console.log(req.params.commentID)
+
   if (req.signedCookies.loginUser) {
     let idx = COMMENTS.findIndex(it =>
-      !it.isDelete && it.id == req.params.commentID &&
-      it.comment
-    )
+      !it.isDelete && it.id == req.params.commentID)
     if (idx >= 0) {
       if (COMMENTS[idx].author == req.signedCookies.loginUser) {
         COMMENTS[idx].isDelete = true
