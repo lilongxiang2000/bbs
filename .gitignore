@@ -4,6 +4,8 @@ node_modules/
 # 忽略IDE的配置文件
 .vscode/
 
-users.json
 posts.json
 comments.json
+
+*.sqlite3
+*.exe

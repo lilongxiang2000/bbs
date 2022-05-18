@@ -3,13 +3,17 @@ const cookieParser = require('cookie-parser')
 const fs           = require('fs')
 const svgCaptcha   = require('svg-captcha')
 const md5          = require('md5')
+const DB           = require('better-sqlite3')
 
 
 const PORT     = 8080
 const app      = express()
-const USERS    = JSON.parse(fs.readFileSync('./users.json'))
 const POSTS    = JSON.parse(fs.readFileSync('./posts.json'))
 const COMMENTS = JSON.parse(fs.readFileSync('./comments.json'))
+const db       = new DB('./bbs.sqlite3')
+
+const dbSelectUser = db.prepare('select * from users where username = $username')
+const dbInsertUser = db.prepare('insert into users values ($username,$password,$email,$joinDate)')
 
 
 function timeLocale() {
@@ -57,9 +61,8 @@ app.post('*', (req, res, next) => {
 // 将当前登录用户保存到 req.body.self
 app.get('*', (req, res, next) => {
   if (req.signedCookies.loginUser) {
-    req.body.self = USERS.find(it =>
-      it.username == req.signedCookies.loginUser
-    )
+    let user = {username: req.signedCookies.loginUser}
+    req.body.self = dbSelectUser.get(user) ?? null
   }
 
   next()
@@ -91,10 +94,11 @@ app.get('/', (req, res, next) => {
     } else idx--
   }
 
+  if (!req.body.self) res.clearCookie('loginUser')
+
   res.type('html').render('index.pug', {
     posts: showPosts,
-    loginUser: req.signedCookies.loginUser
-      ? req.body.self : null,
+    loginUser: req.body.self
   })
 
   next()
@@ -116,9 +120,7 @@ app.get('/captcha', (req, res, next) => {
 // user
 app.get('/user/:username', (req, res, next) => {
 
-  let user = USERS.find(it =>
-    !it.isDelete && it.username == req.params.username
-  )
+  let user = dbSelectUser.get(req.params)
 
   if (user) {
     let userPosts = POSTS.filter(it =>
@@ -149,20 +151,16 @@ app.post('/register', (req, res, next) => {
     username: req.body.username,
     email   : req.body.email,
     password: md5(req.body.password + md5(req.body.password.length)),
-    isDelete: false,
-    joinDate: Date.now()
+    joinDate: timeLocale()
   }
 
-  if ( // username | email 已经存在
-    USERS.some(it =>
-      it.username == userInfo.username ||
-      it.email == userInfo.email
-    )
-  ) res.type('html').render('registerErr.pug')
-  else {
-    USERS.push(userInfo)
-    fs.writeFileSync('./users.json', JSON.stringify(USERS, null, 2))
+  try {
+    dbInsertUser.run(userInfo)
+
     res.type('html').render('registerErrS.pug')
+  } catch (err) {
+    console.log(err)
+    res.type('html').render('registerErr.pug')
   }
 
   next()
@@ -180,22 +178,23 @@ app.get('/login', (req, res, next) => {
   next()
 })
 app.post('/login', (req, res, next) => {
-  // 防止传来 脏数据
   let loginInfo = {
     username: req.body.username,
-    password: md5(req.body.password + md5(req.body.password.length))
+    password: md5(
+      req.body.password + md5(req.body.password.length)
+    )
   }
 
   let captcha = req.body.captcha
     ? req.session.captcha == req.body.captcha
     : true
 
-  let user = USERS.find(it =>
-    it.username == loginInfo.username &&
-    it.password == loginInfo.password
-  )
+  let selectUser = dbSelectUser.get(loginInfo)
 
-  if (user && captcha) {
+  if (
+    captcha && selectUser &&
+    selectUser.password == loginInfo.password
+  ) {
     res.cookie('loginUser', loginInfo.username, {
       maxAge: 86400000, // 一天
       signed: true,
@@ -333,6 +332,7 @@ app.delete('/comment/:commentID', (req, res, next) => {
 
   next()
 })
+
 
 app.listen(PORT, '127.0.0.1', () => {
   console.log('Listening on', PORT)
