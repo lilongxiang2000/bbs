@@ -7,7 +7,7 @@ block body
       h3.text-center.my-2=post.title
       div.d-flex.justify-content-between
         a.user(href=`/user/${post.author}`)=post.author
-        span=post.date
+        span=post.createDate
       div.my-2
         if loginUser && loginUser.username == post.author
           button.btn.btn-outline-primary.float-end(
@@ -17,7 +17,7 @@ block body
           script.
             $('.deletePost').on('click', async e => {
               let postID = e.target.dataset.postId
-              if (confirm('确认删除吗？')) {
+              if (confirm('确认删除吗？（该操作不可撤回！）')) {
                 await fetch(`/post/${postID}`, {
                   method: 'delete'
                 })
@@ -25,7 +25,7 @@ block body
                 location.href = '/'
               }
             })
-        p=post.text
+        p=post.content
 
     if loginUser
       div(class='comment-list')
@@ -38,17 +38,18 @@ block body
                 a.mb-1(
                   href=`/user/${post.author}`
                 )=comment.author
-                small=comment.date
+                small=comment.createDate
               .d-flex.justify-content-between.my-2
-                span=comment.text
-                button.btn.btn-outline-primary(
-                  class='deleteComment'
-                  data-comment-id=comment.id
-                ) 删除
+                span=comment.content
+                if loginUser.username == comment.author
+                  button.btn.btn-outline-primary(
+                    class='deleteComment'
+                    data-comment-id=comment.id
+                  ) 删除
           script.
             $('.deleteComment').on('click', async e => {
               let commentID = e.target.dataset.commentId
-              if (confirm('确认删除吗？')) {
+              if (confirm('确认删除吗？（该操作不可撤回！）')) {
                 await fetch(`/comment/${commentID}`, {
                   method: 'delete'
                 })
@@ -62,19 +63,19 @@ block body
         form(action=`/comment/${post.id}`, method="post")
           .form-group
             textarea.form-control(
-              name      = "text"
+              name      = "content"
               maxlength = '200'
               wrap      = 'hard'
             )
           div(class='d-flex justify-content-end my-2')
             .btn-group
               button(
-                type="reset"
-                class="btn btn-outline-primary"
+                type  = "reset"
+                class = "btn btn-outline-primary"
               ) 清空
               button(
-                type="submit"
-                class="btn btn-outline-primary"
+                type  = "submit"
+                class = "btn btn-outline-primary"
               ) 评论
     else
       h3.text-center.my-2 请#[a(href='/login') 登录]后 查看/发表 评论

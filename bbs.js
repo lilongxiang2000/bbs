@@ -8,12 +8,44 @@ const DB           = require('better-sqlite3')
 
 const PORT     = 8080
 const app      = express()
-const POSTS    = JSON.parse(fs.readFileSync('./posts.json'))
-const COMMENTS = JSON.parse(fs.readFileSync('./comments.json'))
 const db       = new DB('./bbs.sqlite3')
 
-const dbSelectUser = db.prepare('select * from users where username = $username')
-const dbInsertUser = db.prepare('insert into users values ($username,$password,$email,$joinDate)')
+
+const dbSelectUserByName = db.prepare(
+  'select * from users where username = $username'
+)
+const dbInsertUser = db.prepare(
+  'insert into users values ($username,$password,$email,$joinDate)'
+)
+
+const dbSelectPostByID = db.prepare(
+  'select * from visiblePosts where id=$id'
+)
+const dbSelectPostByName = db.prepare(
+  'select * from visiblePosts where author=$author'
+)
+const dbSelectPostsReverse = db.prepare(
+  'select * from visiblePosts order by createDate desc limit $n'
+)
+const dbInsertPost = db.prepare(
+  'insert into posts values ($id,$title,$content,$author,$createDate,$isDelete)'
+)
+const dbDeletePostByID = db.prepare(
+  'update posts set isDelete=1 where id=$id'
+)
+
+const dbSelectCommentsByPostID = db.prepare(
+  'select * from visibleComments where postID=$postID order by createDate desc'
+)
+const dbSelectCommentsByID = db.prepare(
+  'select * from visibleComments where id=$id'
+)
+const dbInsertComment = db.prepare(
+  'insert into comments values ($id,$content,$author,$postID,$createDate,$isDelete)'
+)
+const dbDeleteCommentByID = db.prepare(
+  'update comments set isDelete=1 where id=$id'
+)
 
 
 function timeLocale() {
@@ -62,7 +94,7 @@ app.post('*', (req, res, next) => {
 app.get('*', (req, res, next) => {
   if (req.signedCookies.loginUser) {
     let user = {username: req.signedCookies.loginUser}
-    req.body.self = dbSelectUser.get(user) ?? null
+    req.body.self = dbSelectUserByName.get(user) ?? null
   }
 
   next()
@@ -86,18 +118,12 @@ app.use(function sessionMW(req, res, next) {
 // ./
 app.get('/', (req, res, next) => {
   // 按时间显示最近 10 篇帖子
-  let showPosts = [], idx = POSTS.length-1
-  while (showPosts.length < 10) {
-    if (idx < 0) break
-    if (!POSTS[idx].isDelete) {
-      showPosts.push(POSTS[idx--])
-    } else idx--
-  }
+  let showPosts = dbSelectPostsReverse.all({n: 10})
 
   if (!req.body.self) res.clearCookie('loginUser')
 
   res.type('html').render('index.pug', {
-    posts: showPosts,
+    showPosts,
     loginUser: req.body.self
   })
 
@@ -119,13 +145,10 @@ app.get('/captcha', (req, res, next) => {
 
 // user
 app.get('/user/:username', (req, res, next) => {
-
-  let user = dbSelectUser.get(req.params)
+  let user = dbSelectUserByName.get(req.params)
 
   if (user) {
-    let userPosts = POSTS.filter(it =>
-      !it.isDelete && it.author == user.username
-    )
+    let userPosts = dbSelectPostByName.all({author: user.username})
 
     res.type('html').render('user.pug', {
       loginUser: req.signedCookies.loginUser
@@ -189,7 +212,7 @@ app.post('/login', (req, res, next) => {
     ? req.session.captcha == req.body.captcha
     : true
 
-  let selectUser = dbSelectUser.get(loginInfo)
+  let selectUser = dbSelectUserByName.get(loginInfo)
 
   if (
     captcha && selectUser &&
@@ -223,17 +246,15 @@ app.get('/logout', (req, res, next) => {
 
 // post
 app.get('/post/:id', (req, res, next) => {
-  let post = POSTS.find(it =>
-    !it.isDelete && it.id == req.params.id
-  )
+  let post = dbSelectPostByID.get({id: req.params.id})
 
   if (post) {
-    let thisComments = COMMENTS.filter(it =>
-      !it.isDelete && it.postID == post.id
+    let thisComments = dbSelectCommentsByPostID.all(
+      {postID: req.params.id}
     )
 
     res.type('html').render('post.pug', {
-      loginUser: req.body.self ?? null,
+      loginUser: req.body.self,
       post,
       thisComments
     })
@@ -243,16 +264,10 @@ app.get('/post/:id', (req, res, next) => {
 })
 app.delete('/post/:id', (req, res, next) => {
   if (req.signedCookies.loginUser) {
-    let idx = POSTS.findIndex(it =>
-      !it.isDelete && it.id == req.params.id
-    )
+    let post = dbSelectPostByID.get({id: req.params.id})
 
-    if (idx >= 0 && POSTS[idx].author == req.signedCookies.loginUser) {
-      POSTS[idx].isDelete = true
-      fs.writeFileSync(
-        './posts.json',
-        JSON.stringify(POSTS, null, 2)
-      )
+    if (post && post.author == req.signedCookies.loginUser) {
+      dbDeletePostByID.run({id: req.params.id})
     }
   } else res.redirect('/login')
 
@@ -261,21 +276,23 @@ app.delete('/post/:id', (req, res, next) => {
 app.post('/post', (req, res, next) => {
   // 已登录用户才可发帖
   if (req.signedCookies.loginUser) {
-    // 防止传来 脏数据
     let postInfo = {
-      id      : `${Date.now()}`,               // 待定
-      title   : req.body.title,
-      text    : req.body.text,
-      author  : req.signedCookies.loginUser,
-      date    : timeLocale(),
-      isDelete: false
+      id        : `${Date.now()}`,
+      title     : req.body.title.slice(0, 20),
+      content   : req.body.content,
+      author    : req.signedCookies.loginUser,
+      createDate: timeLocale(),
+      isDelete  : 0
     }
 
-    if (postInfo.title?.length && postInfo.text?.length) {
-      POSTS.push(postInfo)
-      fs.writeFileSync('./posts.json', JSON.stringify(POSTS, null, 2))
+    try {
+      if (postInfo.title.length) {
+        dbInsertPost.run(postInfo)
+        res.redirect(`/post/${postInfo.id}`)
+      }
+    } catch (err) {
+      console.log('add Post', err)
     }
-    res.redirect(`/post/${postInfo.id}`)
   }
 
   next()
@@ -287,47 +304,34 @@ app.post('/comment/:postID', (req, res, next) => {
   if (req.signedCookies.loginUser) {
     // 防止传来 脏数据
     let commentInfo = {
-      id      : `${Date.now()}`,
-      postID  : req.params.postID,
-      text    : req.body.text,
-      date    : timeLocale(),
-      author  : req.signedCookies.loginUser,
-      isDelete: false
+      id        : `${Date.now()}`,
+      content   : req.body.content,
+      author    : req.signedCookies.loginUser,
+      postID    : req.params.postID,
+      createDate: timeLocale(),
+      isDelete  : 0
     }
-    COMMENTS.push(commentInfo)
-    fs.writeFileSync('./comments.json', JSON.stringify(COMMENTS, null, 2))
+    try {
+      dbInsertComment.run(commentInfo)
+    } catch (err) {
+      console.log(err)
+    }
     res.redirect(`/post/${req.params.postID}`)
   } else res.redirect('/login')
 
   next()
 })
 app.delete('/comment/:commentID', (req, res, next) => {
-  console.log(req.params.commentID)
-
   if (req.signedCookies.loginUser) {
-    let idx = COMMENTS.findIndex(it =>
-      !it.isDelete && it.id == req.params.commentID)
-    if (idx >= 0) {
-      if (COMMENTS[idx].author == req.signedCookies.loginUser) {
-        COMMENTS[idx].isDelete = true
-        fs.writeFileSync(
-          './comments.json',
-          JSON.stringify(COMMENTS, null, 2)
-        )
-      } else {
-        // 判断当前评论是否在 登录用户 的帖子下
-        let toPost = POSTS.find(it =>
-          !it.isDelete && it.id == COMMENTS[idx].postID
-        )
-        if (toPost && toPost.author == req.signedCookies.loginUser) {
-          COMMENTS[idx].isDelete = true
-          fs.writeFileSync(
-            './comments.json',
-            JSON.stringify(COMMENTS, null, 2)
-          )
-        } else res.end('No permission')
+    let comment = dbSelectCommentsByID.get({id: req.params.commentID})
+    if (comment && comment.author == req.signedCookies.loginUser) {
+      dbDeleteCommentByID.run({id: comment.id})
+    } else { // 判断当前评论是否在 登录用户 的帖子下
+      let post = dbSelectPostByID.get({id: comment.postID})
+      if (post && post.author == req.signedCookies.loginUser) {
+        dbDeleteCommentByID.run({id: comment.id})
       }
-    } else res.end('comment not found')
+    }
   } else res.redirect('/login')
 
   next()

@@ -18,7 +18,7 @@ block body
         .form-group
           label(for="postText") 正文
           textarea.form-control(
-            name="text"
+            name="content"
             id="postText"
             wrap='hard'
           )
@@ -33,16 +33,16 @@ block body
               class="btn btn-outline-primary"
             ) 发帖
 
-  if posts.length
+  if showPosts.length
     div.my-3
       h3(class='text-center my-2') 最近帖子
       div(class='list-group active overflow-auto')
-        for post in posts
+        for post in showPosts
           a(
             href=`/post/${post.id}`,
             class='list-group-item list-group-item-action'
           )
             div(class='d-flex w-100 justify-content-between')
               h5(class='mb-1')=post.author
-              small=post.date
+              small=post.createDate
             small=post.title

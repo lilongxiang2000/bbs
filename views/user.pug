@@ -17,7 +17,7 @@ block body
                   h5(class='mb-1')=post.title
                 span=post.date
               div(class='d-flex justify-content-between my-2')
-                small.text-break=post.text.slice(0, 200) + '...'
+                small.text-break=post.content.slice(0, 200) + '...'
                 if loginUser && loginUser.username == post.author
                   button.btn.btn-outline-primary.text-nowrap.ms-2(
                     class='deletePost'
@@ -26,11 +26,11 @@ block body
         script.
           $('.deletePost').on('click', async e => {
             let postID = e.target.dataset.postId
-            if (confirm('确认删除吗？')) {
+            if (confirm('确认删除吗？（该操作不可撤回！）')) {
               await fetch(`/post/${postID}`, {
                 method: 'delete'
               })
-              location.href = '/user/#{user.id}'
+              location.href = '/user/#{user.username}'
             }
           })
     else
