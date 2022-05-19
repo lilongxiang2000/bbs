@@ -81,7 +81,7 @@ app.post('*', (req, res, next) => {
       let newHTML = escapeHTML(req.body[key])
       if (newHTML != req.body[key]) {
         console.warn('xss!!!', req.body[key])
-        req.body[key] = '' // 后续会过滤掉长度为 0 的 post
+        req.body[key] = newHTML
       }
     }
   }
@@ -169,22 +169,32 @@ app.get('/register', (req, res, next) => {
   next()
 })
 app.post('/register', (req, res, next) => {
-  // 防止传来 脏数据
-  let userInfo = {
-    username: req.body.username,
-    email   : req.body.email,
-    password: md5(req.body.password + md5(req.body.password.length)),
-    joinDate: timeLocale()
-  }
+  console.log(req.body)
 
-  try {
-    dbInsertUser.run(userInfo)
+  const userReg = /^[a-zA-Z0-9]{3,12}$/
+  const pwdReg  = /^[a-zA-Z0-9_]{8,24}$/
 
-    res.type('html').render('registerErrS.pug')
-  } catch (err) {
-    console.log(err)
-    res.type('html').render('registerErr.pug')
-  }
+  if (
+    userReg.test(req.body.username) &&
+    pwdReg.test(req.body.password)
+  ) {
+    let userInfo = {
+      username: req.body.username,
+      email   : req.body.email,
+      password: md5(req.body.password + md5(req.body.password.length)),
+      joinDate: timeLocale()
+    }
+
+    try {
+      dbInsertUser.run(userInfo)
+      res.type('html').render('registerErrS.pug')
+    } catch (err) {
+      console.log(err)
+      res.type('html').render('registerErr.pug')
+    }
+  } else res.end('Wrong format')
+
+
 
   next()
 })
@@ -235,10 +245,8 @@ app.post('/login', (req, res, next) => {
 
 // logout
 app.get('/logout', (req, res, next) => {
-  let back = req.get('referer') ?? '/'
-
   res.clearCookie('loginUser')
-  res.redirect(back) // 回到主页
+  res.redirect('/login') // 回到主页
 
   next()
 })
@@ -311,12 +319,15 @@ app.post('/comment/:postID', (req, res, next) => {
       createDate: timeLocale(),
       isDelete  : 0
     }
-    try {
-      dbInsertComment.run(commentInfo)
-    } catch (err) {
-      console.log(err)
-    }
-    res.redirect(`/post/${req.params.postID}`)
+    if (commentInfo.content.length < 300) {
+      try {
+        dbInsertComment.run(commentInfo)
+      } catch (err) {
+        console.log(err)
+      }
+      res.redirect(`/post/${req.params.postID}`)
+    } else res.end('Comment is too long')
+
   } else res.redirect('/login')
 
   next()
