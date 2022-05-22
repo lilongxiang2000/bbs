@@ -6,17 +6,16 @@ block body
     div.my-3
       h3.text-center.my-2 发布帖子
       form(action="/post", method="post")
-        .form-group
-          label(for="postTitle") 标题
-          input(
+        .input-group.mb-3
+          label.input-group-text(for="postTitle") 标题
+          input.form-control(
             type="text"
-            class="form-control"
             id="postTitle"
             name='title'
             maxlength='20'
           )
-        .form-group
-          label(for="postText") 正文
+        .input-group.mb-3
+          label.input-group-text(for="postText") 正文
           textarea.form-control(
             name="content"
             id="postText"
@@ -34,15 +33,15 @@ block body
             ) 发帖
 
   if showPosts.length
-    div.my-3
-      h3(class='text-center my-2') 最近帖子
-      div(class='list-group active overflow-auto')
+    .my-3
+      h3.text-center.my-2 最近帖子
+      .list-group.active.overflow-auto
         for post in showPosts
-          a(
-            href=`/post/${post.id}`,
-            class='list-group-item list-group-item-action'
+          a.list-group-item.list-group-item-action(
+            href=`/post/${post.id}`
+            tabindex='-1'
           )
-            div(class='d-flex w-100 justify-content-between')
-              h5(class='mb-1')=post.author
+            .d-flex.w-100.justify-content-between
+              h5.mb-1=post.title
               small=post.createDate
-            small=post.title
+            small @ #{post.author}
