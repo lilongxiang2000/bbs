@@ -31,25 +31,25 @@ block body
               type="submit"
               class="btn btn-outline-primary"
             ) 发帖
-    script.
-      $('button[type="submit"]').on('click', async e => {
-        e.preventDefault()
+      script.
+        $('button[type="submit"]').on('click', async e => {
+          e.preventDefault()
 
-        let postInfo = {
-          title: $('#postTitle').val().slice(0, 20),
-          content: $('#postText').val()
-        }
+          let postInfo = {
+            title: $('#postTitle').val().slice(0, 20),
+            content: $('#postText').val()
+          }
 
-        await fetch('/post', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: $('form').serialize()
+          await fetch('/post', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: $('form').serialize()
+          })
+
+          location.href = '/'
         })
-
-        location.href = '/'
-      })
 
   if showPosts.length
     .my-3
