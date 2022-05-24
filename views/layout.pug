@@ -29,7 +29,7 @@ html(lang="en")
           href='/'
           tabindex='-1'
         ) 首页
-        button.navbar-toggler.btn-outline-primary(
+        button.navbar-toggler(
           type='button' data-bs-toggle='collapse'
           data-bs-target='#navbarSupportedContent'
           aria-controls='navbarSupportedContent'
@@ -52,8 +52,12 @@ html(lang="en")
                 )
                   li
                     a.dropdown-item(
-                      href=`user/${loginUser.username}`
+                      href=`/user/${loginUser.username}`
                     ) 个人主页
+                  li
+                    a.dropdown-item(
+                      href=`/setting/${loginUser.username}`
+                    ) 设置
                   li
                     hr.dropdown-divider
                   li
