@@ -6,12 +6,12 @@ block body
     .d-flex.justify-content-end
 
     if userPosts.length
-      div(class='post-list')
+      .post-list
         h3.text-center.my-2=user.username
           span.ms-2 发过的帖子
         ul.px-0
-          each post in userPosts
-            li(class='list-group-item list-group-item-action')
+          for post in userPosts
+            li.list-group-item.list-group-item-action
               .d-flex.justify-content-between
                 a(href=`/post/${post.id}`)
                   h5(class='mb-1')=post.title
