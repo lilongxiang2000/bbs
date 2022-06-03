@@ -72,6 +72,13 @@ function escapeHTML(str) {
 // 解码 url 编码请求体
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser('bbs'))
+app.use(express.static('public'))
+
+// 控制台输出 请求方法 和 path
+app.use((req, res, next) => {
+  console.log(req.method, req.path)
+  next()
+})
 
 
 // 防止 xss 攻击
@@ -96,11 +103,11 @@ app.get('*', (req, res, next) => {
     let user = {username: req.signedCookies.loginUser}
     req.body.self = dbSelectUserByName.get(user) ?? null
   }
-
   next()
 })
 
 
+// 确保唯一会话，验证码
 const sessionObjs = {}
 app.use(function sessionMW(req, res, next) {
   if (!req.cookies.sessionID) {
@@ -302,6 +309,20 @@ app.post('/post', (req, res, next) => {
       console.log('add Post', err)
     }
   }
+
+  next()
+})
+
+
+// setting
+app.get('/setting/:username', (req, res, next) => {
+  let user = dbSelectUserByName.get(req.params)
+  let avatar = null
+  res.type('html').render('setting.pug', {
+    user,
+    avatar,
+    loginUser: req.body.self
+  })
 
   next()
 })
