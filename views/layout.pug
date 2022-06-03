@@ -23,7 +23,7 @@ html(lang="en")
       }
 
   body(class='100vh')
-    nav.navbar.navbar-expand-lg.navbar-light.bg-light
+    nav.navbar.navbar-expand-sm.navbar-light.bg-light
       .container
         a.navbar-brand(
           href='/'
@@ -81,9 +81,9 @@ html(lang="en")
                 a.nav-link(href='/login') 登录
               li.nav-item
                 a.nav-link(href='/register') 注册
-          form.d-flex
-            input.form-control.me-2(type='search' placeholder='Search' aria-label='Search')
-            button.btn.btn-outline-primary(type='submit') Search
+          //- form.d-flex
+          //-   input.form-control.me-2(type='search' placeholder='Search' aria-label='Search')
+          //-   button.btn.btn-outline-primary(type='submit') Search
         script.
           $('button.navbar-toggler').on('click', e => {
             if (e.target.ariaExpanded == 'true') {
