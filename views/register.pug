@@ -5,7 +5,7 @@ block body
   div.register
     h3.text-center.my-2 注册
     form(action="/register", method="post")
-      div(class='form-list')
+      .form-list
         label(for="postUsername") 用户名（3-12位，字母或数字）
         input.form-control(
           type      = "text"
@@ -14,7 +14,7 @@ block body
           minlength = '3'
           maxlength = '12'
         )
-      div(class='form-list')
+      .form-list
         label(for="postEmail") 邮箱
         input.form-control(
           type = "email"
@@ -23,7 +23,7 @@ block body
           minlength = '5'
           maxlength = '40'
         )
-      div(class='form-list')
+      .form-list
         label(for="password") 密码（8-24位，字母或数字）
         input.form-control(
           type      = "password"
@@ -33,7 +33,7 @@ block body
           maxlength = '24'
           onkeyup   = "value=value.replace(/[\W]/g,'')"
         )
-      div(class='form-list')
+      .form-list
         label(for="password2") 确认密码
         input.form-control(
           type = "password"
@@ -41,8 +41,8 @@ block body
           minlength = '8'
           maxlength = '24'
         )
-      div(class='d-flex justify-content-end my-2')
-        div(class='btn-group')
+      .d-flex.justify-content-end.my-2
+        .btn-group
           button(
             type  = "reset"
             class = "btn btn-outline-primary"
