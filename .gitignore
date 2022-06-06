@@ -4,7 +4,7 @@ node_modules/
 # 忽略IDE的配置文件
 .vscode/
 
-*.sqlite3
+# *.sqlite3
 *.exe
 
 public/
