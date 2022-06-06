@@ -6,7 +6,7 @@ const md5          = require('md5')
 const DB           = require('better-sqlite3')
 
 
-const PORT     = 80
+const PORT     = 8080
 const app      = express()
 const db       = new DB('./bbs.sqlite3')
 
