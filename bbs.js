@@ -370,6 +370,6 @@ app.delete('/comment/:commentID', (req, res, next) => {
 })
 
 
-app.listen(PORT, '127.0.0.1', () => {
+app.listen(PORT, () => {
   console.log('Listening on', PORT)
 })
