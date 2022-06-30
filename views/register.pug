@@ -55,16 +55,15 @@ block body
       $('button[type="submit"]').on('click', async e => {
         e.preventDefault()
 
-        let username = $('#postUsername').val()
-        let pwd1     = $('#password').val()
-        let pwd2     = $('#password2').val()
-
-        const userReg = /^[a-zA-Z0-9]{3,12}$/
-        const pwdReg  = /^[a-zA-Z0-9_]{8,24}$/
+        const username = $('#postUsername').val()
+        const pwd1     = $('#password').val()
+        const pwd2     = $('#password2').val()
+        const userReg  = /^[a-zA-Z0-9]{3,12}$/
+        const pwdReg   = /^[a-zA-Z0-9_]{8,24}$/
 
         if (
           userReg.test(username) &&
-          pwdReg.test(pwd1) && pwd1 == pwd2
+          pwdReg.test(pwd1) && pwd1 === pwd2
         ) {
           await fetch('/register', {
             method: 'POST',
@@ -76,5 +75,5 @@ block body
 
           location.href = '/login'
         }
-        else alret('格式错误！请检查')
+        else alert('格式错误！请检查')
       })

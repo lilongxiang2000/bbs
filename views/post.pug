@@ -3,80 +3,93 @@ extend layout.pug
 
 block body
   if post
-    div.post.my-3
-      h3.text-center.my-2=post.title
-      div.d-flex.justify-content-between
-        a.user(href=`/user/${post.author}`)=post.author
-        span=post.createDate
-      div.my-2
-        if loginUser && loginUser.username == post.author
-          button.btn.btn-outline-primary.float-end(
-            class='deletePost'
-            data-post-id=post.id
-          ) 删除
-          script.
-            $('.deletePost').on('click', async e => {
-              let postID = e.target.dataset.postId
-              if (confirm('确认删除吗？（该操作不可撤回！）')) {
-                await fetch(`/post/${postID}`, {
-                  method: 'delete'
-                })
+    .d-flex.border
+      .d-flex.flex-column
+        img.avatar-big.d-block.rounded.my-2(
+          src=`/${
+            author.avatarLink || './assets/img/avatar-null.jpg'
+          }`
+        )
+        a(href=`/user/${post.author}`) @#{post.author}
+        span 注册时间：#{author.joinDate.split(' ')[0]}
+      .px-3.flex-fill.d-flex.flex-column
+        .d-flex.justify-content-between
+          span.fs-2=post.title
+          .my-2.px-3.d-flex.justify-content-end
+            //- 删除按钮
+            if loginUser && loginUser.username === post.author
+              a.deletePost.mx-2(
+                href='#' data-post-id=post.id
+              ) 删除
+              script.
+                $('.deletePost').on('click', async e => {
+                  const postID = e.target.dataset.postId
+                  if (confirm('确认删除该帖？（该操作不可撤回！）')) {
+                    await fetch(`/post/${postID}`, {
+                      method: 'delete'
+                    })
 
-                location.href = '/'
-              }
-            })
-        p=post.content
+                    location.href = '/'
+                  }
+                })
+            span.text-end 发布时间：#{post.createDate}
+        p.mt-2.flex-fill.text-break=post.content
 
     if loginUser
-      div(class='comment-list')
-        if thisComments.length
-          h3.text-center.my-2 全部评论
-          div.list-group-active
-          for comment in thisComments
-            div.list-group-item.list-group-item-action
-              div(class='d-flex w-100 justify-content-between')
-                a.mb-1(
-                  href=`/user/${post.author}`
-                )=comment.author
-                small=comment.createDate
-              .d-flex.justify-content-between.my-2
-                span=comment.content
-                if loginUser.username == comment.author
-                  button.btn.btn-outline-primary(
-                    class='deleteComment'
-                    data-comment-id=comment.id
+      if thisComments.length
+        for comment in thisComments
+          .d-flex.border
+            .d-flex.flex-column
+              img.avatar-big.d-block.rounded.my-2(
+                src=`/${
+                  thisCommentsAuthors[comment.author].avatarLink ||
+                  './assets/img/avatar-null.jpg'
+                }`
+              )
+              a(href=`/user/${comment.author}`) @#{comment.author}
+              span 注册时间：#{thisCommentsAuthors[comment.author].joinDate.split(' ')[0]}
+            .px-3.flex-fill.d-flex.flex-column
+              .my-2.px-3.d-flex.justify-content-end
+                //- 删除按钮
+                if loginUser.username === comment.author
+                  a.deleteComment.mx-2(
+                    href='#' data-comment-id=comment.id
                   ) 删除
-          script.
-            $('.deleteComment').on('click', async e => {
-              let commentID = e.target.dataset.commentId
-              if (confirm('确认删除吗？（该操作不可撤回！）')) {
-                await fetch(`/comment/${commentID}`, {
-                  method: 'delete'
-                })
+                  script.
+                    $('.deleteComment').on('click', async e => {
+                      const commentID = e.target.dataset.commentId
+                      if (confirm('确认删除该评论？（该操作不可撤回！）')) {
+                        await fetch(`/comment/${commentID}`, {
+                          method: 'delete'
+                        })
 
-                location.href = '/post/#{post.id}'
-              }
-            })
+                        location.href = '/post/#{post.id}'
+                      }
+                    })
+                span.text-end 发布时间：#{comment.createDate}
+              p.mt-2.flex-fill.text-break=comment.content
 
-      div(class='add-comment')
-        h3.text-center.my-2 评论帖子
-        form(action=`/comment/${post.id}`, method="post")
-          .form-group
-            textarea.form-control(
-              name      = "content"
-              maxlength = '200'
-              wrap      = 'hard'
-            )
-          div(class='d-flex justify-content-end my-2')
-            .btn-group
-              button(
-                type  = "reset"
-                class = "btn btn-outline-primary"
-              ) 清空
-              button(
-                type  = "submit"
-                class = "btn btn-outline-primary"
-              ) 评论
+      .d-flex.border
+        .d-flex.flex-column
+          img.avatar-big.d-block.rounded.my-2(
+            src=`/${
+              author.avatarLink || './assets/img/avatar-null.jpg'
+            }`
+          )
+        .px-3.flex-fill.d-flex.flex-column
+          form.flex-fill(action=`/comment/${post.id}`, method="post")
+            .d-flex.justify-content-between.my-2
+              span.fs-2 评论帖子
+              .btn-group
+                button.btn.btn-outline-primary(type="reset") 清空
+                button.btn.btn-outline-primary(type="submit") 评论
+            .mt-2.flex-fill.text-break
+              .form-group
+                textarea.form-control(
+                  name      = "content"
+                  maxlength = '200'
+                  wrap      = 'hard'
+                )
     else
       h3.text-center.my-2 请#[a(href='/login') 登录]后 查看/发表 评论
 

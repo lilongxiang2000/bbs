@@ -5,9 +5,18 @@ block body
   if user
     .my-3
       h3.text-center.my-2 设置
-
-      .my-3
-        table.table.d-inline
+      .my-3.d-flex.justify-content-between
+        div.d-flex.flex-column
+          img.avatar-big.d-block.rounded.img-thumbnail(
+            src=`/${
+              user.avatarLink || '/assets/img/avatar-null.jpg'
+            }`
+          )
+          form(action='/avatar' method="post" enctype="multipart/form-data")
+            input.hidden(type="text", name="username" value=`${user.username}`)
+            input(type="file" name="avatar" accept=".jpg, .jpeg, .png, .gif")
+            button(type="submit") 上传新头像
+        table.table.m-0.table-hover
           tr
             td 用户名:
             td=user.username
@@ -17,23 +26,3 @@ block body
           tr
             td 邮箱:
             td=user.email
-        if avatar
-          img.rounded.img-thumbnail.float-end.mb-5(
-            src="", alt="err"
-            width=200, height=200
-          )
-        else
-          img.rounded.img-thumbnail.float-end.mb-5(
-            src="/assets/image/jay.jpg"
-            width=200, height=200
-          )
-
-
-      .input-group.mb-5
-        input#inputGroupFile.form-control(
-          type='file'
-        )
-        label.input-group-text.btn.btn-outline-primary(
-          for='inputGroupFile'
-        ) 上传头像
-

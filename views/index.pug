@@ -4,7 +4,7 @@ extend layout.pug
 block body
   if loginUser
     div.my-3
-      h3.text-center.my-2 发布帖子
+      h3.text-center.my-2 发帖
       form(action="/post", method="post")
         .input-group.mb-3
           label.input-group-text(for="postTitle") 标题
@@ -21,21 +21,19 @@ block body
             id="postText"
             wrap='hard'
           )
-        div(class='d-flex justify-content-end my-2')
-          div(class='btn-group')
-            button(
+        div.d-flex.justify-content-end.my-2
+          div.btn-group
+            button.btn.btn-outline-primary(
               type="reset"
-              class="btn btn-outline-primary"
             ) 清空
-            button(
+            button.btn.btn-outline-primary(
               type="submit"
-              class="btn btn-outline-primary"
-            ) 发帖
+            ) 发布
       script.
         $('button[type="submit"]').on('click', async e => {
           e.preventDefault()
 
-          let postInfo = {
+          const postInfo = {
             title: $('#postTitle').val().slice(0, 20),
             content: $('#postText').val()
           }
@@ -63,4 +61,4 @@ block body
             .d-flex.w-100.justify-content-between
               h5.mb-1=post.title
               small=post.createDate
-            small @ #{post.author}
+            span @ #{post.author}
