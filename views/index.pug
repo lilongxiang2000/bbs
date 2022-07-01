@@ -56,9 +56,14 @@ block body
         for post in showPosts
           a.list-group-item.list-group-item-action(
             href=`/post/${post.id}`
-            tabindex='-1'
           )
             .d-flex.w-100.justify-content-between
-              h5.mb-1=post.title
-              small=post.createDate
-            span @ #{post.author}
+              img.avatar-mini.rounded.me-2(
+                src=`/${
+                  showPostsAuthor[post.author].avatarLink ||
+                  './assets/img/avatar-null.jpg'
+                }`
+              )
+              span.flex-fill @ #{post.author}
+              span=post.createDate
+            h5.my-2.flex-fill=post.title

@@ -10,6 +10,12 @@ block body
         for post in userPosts
           li.list-group-item.list-group-item-action
             .d-flex.justify-content-between
+              img.avatar-mini.rounded.me-2(
+                src=`/${
+                  user.avatarLink ||
+                  './assets/img/avatar-null.jpg'
+                }`
+              )
               a.me-auto(href=`/post/${post.id}`)
                 h5.mb-1=post.title
               if loginUser && loginUser.username == post.author

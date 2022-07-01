@@ -4,7 +4,7 @@ extend layout.pug
 block body
   if post
     .d-flex.border
-      .d-flex.flex-column
+      .d-flex.flex-column.ps-2
         img.avatar-big.d-block.rounded.my-2(
           src=`/${
             author.avatarLink || './assets/img/avatar-null.jpg'
@@ -39,7 +39,7 @@ block body
       if thisComments.length
         for comment in thisComments
           .d-flex.border
-            .d-flex.flex-column
+            .d-flex.flex-column.ps-2
               img.avatar-big.d-block.rounded.my-2(
                 src=`/${
                   thisCommentsAuthors[comment.author].avatarLink ||
@@ -70,7 +70,7 @@ block body
               p.mt-2.flex-fill.text-break=comment.content
 
       .d-flex.border
-        .d-flex.flex-column
+        .d-flex.flex-column.ps-2
           img.avatar-big.d-block.rounded.my-2(
             src=`/${
               author.avatarLink || './assets/img/avatar-null.jpg'

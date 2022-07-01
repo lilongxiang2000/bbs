@@ -137,11 +137,17 @@ app.use(function sessionMW(req, res, next) {
 app.get('/', (req, res, next) => {
   // 按时间显示最近 10 篇帖子
   const showPosts = dbMethods.selectPostsReverse.all({n: 10})
+  const showPostsAuthor = {}
+  showPosts.forEach(item => {
+    showPostsAuthor[item.author] =
+      dbMethods.selectUserByName.get({username: item.author})
+  })
 
   if (!req.body.self) res.clearCookie('loginUser')
 
   res.type('html').render('index.pug', {
     showPosts,
+    showPostsAuthor,
     loginUser: req.body.self,
   })
 
@@ -384,7 +390,7 @@ app.delete('/comment/:commentID', (req, res, next) => {
       dbMethods.deleteCommentByID.run({id: comment.id})
     } else { // 判断当前评论是否在 登录用户 的帖子下
       const post = dbMethods.selectPostByID.get({id: comment.postID})
-      if (post && post.author == req.signedCookies.loginUser) {
+      if (post && post.author === req.signedCookies.loginUser) {
         deleteCommentByID.run({id: comment.id})
       }
     }

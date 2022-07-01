@@ -47,12 +47,13 @@ html(lang="en")
         border: 5px solid #fff;
         box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
       }
-      .avatar-mini {
+      .avatar-mini, .avatar-nav {
         min-width: 40px;
         max-width: 40px;
         min-height: 40px;
         max-height: 40px;
-
+      }
+      .avatar-nav {
         position: absolute;
         left: -40px;
       }
@@ -68,7 +69,7 @@ html(lang="en")
           ul.navbar-nav.ms-auto.mb-lg-0.text-end
             if loginUser
               li.nav-item.dropdown
-                img.avatar-mini.rounded(
+                img.avatar-nav.rounded(
                   src=`/${
                     loginUser.avatarLink || '/assets/img/avatar-null.jpg'
                   }`
