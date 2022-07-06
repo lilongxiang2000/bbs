@@ -63,11 +63,6 @@ const dbMethods = {
 function timeLocale() {
   return new Date().toLocaleString()
 }
-/** Converts the characters "&", "<", ">", '"',
- * and "'" in string to their corresponding HTML entities.
- * @param {*} str
- * @returns {String}
- */
 function escapeHTML(str) {
   // 防止 sxx 攻击
   str = str.toString()
