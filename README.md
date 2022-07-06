@@ -1,34 +1,20 @@
-# 基于 Express 的论坛
-基于 `Express` + `SQLite` + `Pug` 等开发一个简单论坛
+# 使用 `Express` + `SQLite` + `Pug` 实现的简易论坛
 
 # 功能列表
+- 登录（验证码验证）、注册
 - 发帖、删贴
 - 评论、删除评论
-- 登录（验证码验证）、注册
 - 头像上传
-
-# 界面展示
-## 主页
-![home](https://s2.loli.net/2022/07/06/nAbuCU8vmEwyH3L.png)
-
-## 帖子页面
-![post](https://s2.loli.net/2022/07/06/8rtBTIp2EsyQHZR.png)
 
 # 技术栈
 ## 前端
-- ES6：
+- ES6：ECMAScript 新一代语法，模块化、解构赋值
 - Bootstrap：前端样式框架
 ## 后端
-- Express：基于Node.js平台的Web开发框架，本项目使用Express进行后端的开发
-
-
-# Build Setup
-## 安装依赖
-```bash
-npm install
-```
+- Express：使用 Express 进行后端的开发
+- Pug：使用 pug 模板引擎渲染前端请求的页面
 ## 数据库
-创建如下表结构，将数据库文件存放在 `./bbs.sqlite3` 下
+数据库结构如下
 ```SQL
 CREATE TABLE users(
   username text primary key,
@@ -61,8 +47,9 @@ CREATE VIEW visibleComments as select * from comments where isDelete=0;
 /* visibleComments(id,content,author,postID,createDate,isDelete) */
 ```
 
-## 运行
+# Install & Run
 ```bash
+npm install
 node bbs.js
 # http://127.0.0.1:8080
 ```
