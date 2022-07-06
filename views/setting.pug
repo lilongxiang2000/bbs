@@ -15,9 +15,9 @@ block body
             )
           td
             form(action='/avatar' method="post" enctype="multipart/form-data")
-            input.hidden(type="text", name="username" value=`${user.username}`)
-            input.form-control(type="file" name="avatar" accept=".jpg, .jpeg, .png, .gif")
-            button.btn.btn-outline-primary(type="submit") 上传新头像
+              input.hidden(type="text", name="username" value=`${user.username}`)
+              input.form-control(type="file" name="avatar" accept=".jpg, .jpeg, .png, .gif")
+              button.btn.btn-outline-primary.my-2(type="submit") 上传新头像
         tr
           td 用户名:
           td=user.username
