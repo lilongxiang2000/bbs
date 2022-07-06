@@ -1,4 +1,4 @@
-# 使用 `Express` + `SQLite` + `Pug` 实现的简易论坛
+# 使用 Express + SQLite + Pug 实现的简易论坛
 
 # 功能列表
 - 登录（验证码验证）、注册
@@ -7,12 +7,15 @@
 - 头像上传
 
 # 技术栈
+
 ## 前端
 - ES6：ECMAScript 新一代语法，模块化、解构赋值
 - Bootstrap：前端样式框架
+
 ## 后端
 - Express：使用 Express 进行后端的开发
-- Pug：使用 pug 模板引擎渲染前端请求的页面
+- Pug：使用 Pug 模板引擎渲染前端请求的页面
+
 ## 数据库
 数据库结构如下
 ```SQL
