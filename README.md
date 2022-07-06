@@ -14,13 +14,6 @@
 ## 帖子页面
 ![post](https://s2.loli.net/2022/07/06/8rtBTIp2EsyQHZR.png)
 
-## 用户界面
-![user](https://s2.loli.net/2022/07/06/ecs17Cf62zQd9aM.png)
-
-## 登录、注册
-![login](https://s2.loli.net/2022/07/06/9Joc8g4Hz6pKW5T.png)
-![register](https://s2.loli.net/2022/07/06/IzKbrJDncafYgH2.png)
-
 # 技术栈
 ## 前端
 - ES6：
