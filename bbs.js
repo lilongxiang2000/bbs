@@ -9,6 +9,8 @@ const multer       = require('multer')
 const PORT    = 8080
 const app     = express()
 const db      = new DB('./bbs.sqlite3')
+const userReg = /^[a-zA-Z0-9]{3,12}$/
+const pwdReg  = /^[a-zA-Z0-9_]{8,24}$/
 
 const upload = multer({ dest: './avatars/' })
 
@@ -69,7 +71,6 @@ function escapeHTML(str) {
 
   str = str.split('&').join('&amp;')
   str = str.split('<').join('&lt;')
-  str = str.split('>').join('&gt;')
   str = str.split('"').join('&quot;')
   str = str.split("'").join('&#39;')
 
@@ -189,9 +190,6 @@ app.get('/register', (req, res, next) => {
   next()
 })
 app.post('/register', (req, res, next) => {
-  const userReg = /^[a-zA-Z0-9]{3,12}$/
-  const pwdReg  = /^[a-zA-Z0-9_]{8,24}$/
-
   if (
     userReg.test(req.body.username) &&
     pwdReg.test(req.body.password)
