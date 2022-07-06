@@ -1,5 +1,18 @@
-# 基于 `express` 的论坛
+# 基于 Express 的论坛
 基于 `Express` + `SQLite` + `Pug` 等开发一个简单论坛
+
+# 功能列表
+- 发帖、删贴
+- 评论、删除评论
+- 登录（验证码验证）、注册
+- 头像上传
+# 技术栈
+## 前端
+- ES6：
+- Bootstrap：前端样式框架
+## 后端
+- Express：基于Node.js平台的Web开发框架，本项目使用Express进行后端的开发
+
 
 # Build Setup
 ## 安装依赖
@@ -7,7 +20,7 @@
 npm install
 ```
 ## 数据库
-创建如下表结构，并将数据库文件存放在 `./bbs.sqlite3` 下
+创建如下表结构，将数据库文件存放在 `./bbs.sqlite3` 下
 ```SQL
 CREATE TABLE users(
   username text primary key,
@@ -34,13 +47,14 @@ CREATE TABLE comments(
   createDate text not null,
   isDelete integer not null
 );
-CREATE VIEW visiblePosts as select * from posts where isDelete=0
-/* visiblePosts(id,title,content,author,createDate,isDelete) */;
-CREATE VIEW visibleComments as select * from comments where isDelete=0
-/* visibleComments(id,content,author,postID,createDate,isDelete) */;
+CREATE VIEW visiblePosts as select * from posts where isDelete=0;
+/* visiblePosts(id,title,content,author,createDate,isDelete) */
+CREATE VIEW visibleComments as select * from comments where isDelete=0;
+/* visibleComments(id,content,author,postID,createDate,isDelete) */
 ```
 
 ## 运行
 ```bash
 node bbs.js
+# http://127.0.0.1:8080
 ```
