@@ -11,28 +11,26 @@ block body
           }`
         )
         a(href=`/user/${post.author}`) @#{post.author}
-        span 注册时间：#{author.joinDate.split(' ')[0]}
       .px-3.flex-fill.d-flex.flex-column
-        .d-flex.justify-content-between
-          span.fs-2=post.title
-          .my-2.px-3.d-flex.justify-content-end
-            //- 删除按钮
-            if loginUser && loginUser.username === post.author
-              a.deletePost.mx-2(
-                href='#' data-post-id=post.id
-              ) 删除
-              script.
-                $('.deletePost').on('click', async e => {
-                  const postID = e.target.dataset.postId
-                  if (confirm('确认删除该帖？（该操作不可撤回！）')) {
-                    await fetch(`/post/${postID}`, {
-                      method: 'delete'
-                    })
+        span.fs-2=post.title
+        .my-2.px-3.d-flex.justify-content-end.text-nowrap
+          //- 删除按钮
+          if loginUser && loginUser.username === post.author
+            a.deletePost.mx-2(
+              href='#' data-post-id=post.id
+            ) 删除
+            script.
+              $('.deletePost').on('click', async e => {
+                const postID = e.target.dataset.postId
+                if (confirm('确认删除该帖？（该操作不可撤回！）')) {
+                  await fetch(`/post/${postID}`, {
+                    method: 'delete'
+                  })
 
-                    location.href = '/'
-                  }
-                })
-            span.text-end 发布时间：#{post.createDate}
+                  location.href = '/'
+                }
+              })
+          span.text-end 发布时间：#{post.createDate}
         p.mt-2.flex-fill.text-break=post.content
 
     if loginUser
@@ -47,7 +45,6 @@ block body
                 }`
               )
               a(href=`/user/${comment.author}`) @#{comment.author}
-              span 注册时间：#{thisCommentsAuthors[comment.author].joinDate.split(' ')[0]}
             .px-3.flex-fill.d-flex.flex-column
               .my-2.px-3.d-flex.justify-content-end
                 //- 删除按钮
@@ -70,26 +67,22 @@ block body
               p.mt-2.flex-fill.text-break=comment.content
 
       .d-flex.border
-        .d-flex.flex-column.ps-2
-          img.avatar-big.d-block.rounded.my-2(
-            src=`/${
-              loginUser.avatarLink || './assets/img/avatar-null.jpg'
-            }`
-          )
+        img.avatar-big.d-block.rounded.m-2(
+          src=`/${
+            loginUser.avatarLink || './assets/img/avatar-null.jpg'
+          }`
+        )
         .px-3.flex-fill.d-flex.flex-column
-          form.flex-fill(action=`/comment/${post.id}`, method="post")
+          form(action=`/comment/${post.id}`, method="post")
             .d-flex.justify-content-between.my-2
               span.fs-2 评论帖子
               .btn-group
                 button.btn.btn-outline-primary(type="reset") 清空
                 button.btn.btn-outline-primary(type="submit") 评论
-            .mt-2.flex-fill.text-break
-              .form-group
-                textarea.form-control(
-                  name      = "content"
-                  maxlength = '200'
-                  wrap      = 'hard'
-                )
+            textarea.form-control(
+              name = "content"
+              wrap = 'hard'
+            )
     else
       h3.text-center.my-2 请#[a(href='/login') 登录]后 查看/发表 评论
 
