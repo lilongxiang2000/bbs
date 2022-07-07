@@ -1,5 +1,8 @@
 # 使用 Express + SQLite + Pug 实现的简易论坛
 
+# 界面展示
+![](public/assets/img/demo.png)
+
 # 功能列表
 - 登录（验证码验证）、注册
 - 发帖、删贴
