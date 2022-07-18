@@ -79,8 +79,9 @@ function escapeHTML(str) {
 
 // 解码 url 编码请求体
 app.use(express.urlencoded({ extended: true }))
-app.use(express.static('public'))
-app.use(express.static('avatars'))
+app.use('/', express.static('public'))
+app.use('/', express.static('avatars'))
+// app.use(express.static('avatars'))
 app.use(cookieParser('bbs'))
 
 // 控制台输出 请求方法 和 path
