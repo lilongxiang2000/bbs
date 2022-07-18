@@ -41,7 +41,7 @@ block body
               img.avatar-big.d-block.rounded.my-2(
                 src=`/${
                   thisCommentsAuthors[comment.author].avatarLink ||
-                  './public/avatar-null.jpg'
+                  './assets/img/avatar-null.jpg'
                 }`
               )
               a(href=`/user/${comment.author}`) @#{comment.author}
@@ -69,7 +69,7 @@ block body
       .d-flex.border
         img.avatar-big.d-block.rounded.m-2(
           src=`/${
-            loginUser.avatarLink || './public/avatar-null.jpg'
+            loginUser.avatarLink || './assets/img/avatar-null.jpg'
           }`
         )
         .px-3.flex-fill.d-flex.flex-column
