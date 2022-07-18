@@ -6,7 +6,7 @@ const md5          = require('md5')
 const DB           = require('better-sqlite3')
 const multer       = require('multer')
 
-const PORT    = 8080
+const PORT    = 80
 const app     = express()
 const db      = new DB('./bbs.sqlite3')
 const userReg = /^[a-zA-Z0-9]{3,12}$/
