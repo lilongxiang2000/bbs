@@ -5,6 +5,7 @@ const svgCaptcha   = require('svg-captcha')
 const md5          = require('md5')
 const DB           = require('better-sqlite3')
 const multer       = require('multer')
+const path         = require('path')
 
 const PORT    = 80
 const app     = express()
@@ -79,8 +80,9 @@ function escapeHTML(str) {
 
 // 解码 url 编码请求体
 app.use(express.urlencoded({ extended: true }))
-app.use('/public', express.static('public'))
-app.use('/avatars', express.static('avatars'))
+app.use('/public', express.static(path.join(__dirname, 'public')))
+app.use('/', express.static(path.join(__dirname, 'avatars')))
+// app.use(express.static('public'))
 // app.use(express.static('avatars'))
 app.use(cookieParser('bbs'))
 
