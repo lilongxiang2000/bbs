@@ -7,7 +7,7 @@ block body
       .d-flex.flex-column.ps-2
         img.avatar-big.d-block.rounded.my-2(
           src=`/${
-            author.avatarLink || './assets/img/avatar-null.jpg'
+            author.avatarLink || './public/avatar-null.jpg'
           }`
         )
         a(href=`/user/${post.author}`) @#{post.author}
@@ -41,7 +41,7 @@ block body
               img.avatar-big.d-block.rounded.my-2(
                 src=`/${
                   thisCommentsAuthors[comment.author].avatarLink ||
-                  './assets/img/avatar-null.jpg'
+                  './public/avatar-null.jpg'
                 }`
               )
               a(href=`/user/${comment.author}`) @#{comment.author}
@@ -69,7 +69,7 @@ block body
       .d-flex.border
         img.avatar-big.d-block.rounded.m-2(
           src=`/${
-            loginUser.avatarLink || './assets/img/avatar-null.jpg'
+            loginUser.avatarLink || './public/avatar-null.jpg'
           }`
         )
         .px-3.flex-fill.d-flex.flex-column
